@@ -15,10 +15,10 @@ public class MultiViewer : MonoBehaviour
 
     public void clearEnv()
     {
-        foreach (Transform env in m_environments)
-        {
-            env.gameObject.SetActive(false);
-        }
+        // foreach (Transform env in m_environments)
+        // {
+        //     env.gameObject.SetActive(false);
+        // }
     }
 
     public void setParent()
