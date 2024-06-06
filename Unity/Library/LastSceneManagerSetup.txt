@@ -1,5 +1,3 @@
-sceneSetups:
-- path: Assets/Scenes/SCENE I - QUAD.unity
-  isLoaded: 1
-  isActive: 1
-  isSubScene: 0
+version https://git-lfs.github.com/spec/v1
+oid sha256:4ed068e7510d9ee281edc2d070c087c7a34ee06f7e1c012c80eb8379c3cb69c7
+size 93
