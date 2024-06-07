@@ -6,16 +6,6 @@ public class Environment : MonoBehaviour
 {
 
     public float scale;
-
-    void Hello()
-    {
-
-    }
-
-    public bhhhhe()
-    {
-
-    }
     
     // Start is called before the first frame update
     void Start()
