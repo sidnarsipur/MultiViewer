@@ -4,8 +4,17 @@ using UnityEngine;
 
 public class Miniature : MonoBehaviour
 {
-    public void switchParent(GameObject g){
-    //    MultiViewer m = GameObject.Find("MultiViewer").GetComponent<MultiViewer>();
-    //    m.changeParent(g);
+    public void selectChild(GameObject g){
+        Debug.Log("Selected");
+
+        MultiViewer m = GameObject.Find("MultiViewer").GetComponent<MultiViewer>();
+        m.setSelectedChild(g);
+    }
+
+    public void unselectChild(){
+        Debug.Log("Unselected");
+
+        MultiViewer m = GameObject.Find("MultiViewer").GetComponent<MultiViewer>();
+        m.setSelectedChild(null);
     }
 }

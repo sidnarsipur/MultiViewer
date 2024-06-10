@@ -8,22 +8,27 @@ public class MultiViewer : MonoBehaviour
     public GameObject parent;
     public List<GameObject> children;
 
-    private GameObject parentCopy;
     private GameObject parentObjects;
+    
+    private GameObject parentCopy;
+
+    private GameObject selectedChild = null;
    
-    // private Dictionary<GameObject, ObjectState> originalStates = new Dictionary<GameObject, ObjectState>();
+    private Dictionary<GameObject, ObjectState> originalStates = new Dictionary<GameObject, ObjectState>();
 
-    // private class ObjectState
-    // {
-    //     public Vector3 position;
-    //     public Vector3 scale;
+    private class ObjectState
+    {
+        public Vector3 position;
+        public Quaternion rotation;
+        public Vector3 scale;
 
-    //     public ObjectState(Vector3 pos, Vector3 scl)
-    //     {
-    //         position = pos;
-    //         scale = scl;
-    //     }
-    // }
+        public ObjectState(Vector3 pos, Quaternion rot, Vector3 scl)
+        {
+            position = pos;
+            rotation = rot;
+            scale = scl;
+        }
+    }
 
     public void clearEnv()
     {
@@ -35,6 +40,8 @@ public class MultiViewer : MonoBehaviour
 
         parent.SetActive(false);
         enableInteraction(parent);
+
+        Debug.Log("Clear Env Finished");
     }
 
     public void setEnv()
@@ -52,6 +59,21 @@ public class MultiViewer : MonoBehaviour
         parentObjects = transform.Find("objects").gameObject;
         parentObjects.transform.parent = parent.transform;
 
+        children.Add(parentCopy);
+
+        GameObject copy = Instantiate(parentObjects); //To be cleaned up!
+        copy.transform.parent = parentCopy.transform;
+        copy.name = parentCopy.name + "objects";
+
+        foreach(Transform t in copy.transform){
+            t.name = "parentCopy" + t.name;
+        }
+
+        Debug.Log("Set Env Finished");
+    }
+
+    public void createChildObjects()
+    {
         foreach(GameObject child in children)
         {
             GameObject objectCopy = Instantiate(parentObjects);
@@ -62,16 +84,10 @@ public class MultiViewer : MonoBehaviour
                 t.name = child.name + t.name;
             }
         }
+    }
 
-        children.Add(parentCopy);
-
-        GameObject copy = Instantiate(parentObjects); //To be cleaned up!
-        copy.transform.parent = parentCopy.transform;
-        copy.name = parentCopy.name + "objects";
-
-        foreach(Transform t in copy.transform){
-            t.name = "parentCopy" + t.name;
-        }
+    public void setSelectedChild(GameObject g){
+        selectedChild = g;
     }
 
    public void placeChildren()
@@ -86,6 +102,8 @@ public class MultiViewer : MonoBehaviour
             GameObject g = children[i];
             g.SetActive(true);
 
+            Debug.Log("Set active" + g.name);
+
             float scale = getScale(g);
 
             g.transform.localScale = new Vector3(scale, scale, scale);
@@ -93,6 +111,17 @@ public class MultiViewer : MonoBehaviour
             float x = parent.transform.position.x - (size.x/4) + width * (i+1);
             Vector3 objectPosition = new Vector3(x, 0.0f, 0.5f);              
             g.transform.position = objectPosition;
+        }
+    }
+
+    public void placeChildObjects(){
+
+        Dictionary<string, (Vector3, float)> parentObjectLocations = new Dictionary<string, (Vector3, float)>();
+
+        GameObject parentTopLeft = parent.Find("TopLeft");
+
+        foreach(Transform object in parent.transform){
+            
         }
     }
 
@@ -106,25 +135,28 @@ public class MultiViewer : MonoBehaviour
             return 0;
     }
 
-    public void changeParent(GameObject g)
-    {
-        // if(OVRInput.Get(OVRInput.RawButton.LIndexTrigger)){
-        //     ResetObjectState(parent);
+    public void changeParent()
+    {   
+        children.Remove(parentCopy);
+        Destroy(parentCopy);
 
-        //     // children.Add(parent);
-        //     // children.Remove(parentCopy);
-        //     // children.Remove(g);
-        //     // Destroy(parentCopy);
+        parentObjects.transform.parent = this.transform;
+        
+        foreach(GameObject child in children){
+            Destroy(transform.Find(child.name + "objects"));
+            ResetObjectState(child);
+        }
 
-        //     // parent = g;
+        ResetObjectState(parent);
+        children.Add(parent);
 
-        //     // foreach(GameObject child in children){
-        //     //     Destroy(transform.Find(child.name + "objects"));
-        //     //     ResetObjectState(child);
-        //     // }
-            
-        //     // setEnv();
-        // }
+        parent = selectedChild;
+
+        setSelectedChild(null);
+        
+        setEnv();
+
+        placeChildren();
     }
 
     public void disableInteraction(GameObject g)
@@ -134,113 +166,59 @@ public class MultiViewer : MonoBehaviour
 
     }
 
-     public void enableInteraction(GameObject g)
-    {
+    public void enableInteraction(GameObject g)
+     {
         GameObject RayGrabInteraction = g.transform.Find("ISDK_RayGrabInteraction").gameObject;
         RayGrabInteraction?.SetActive(true);
 
     }
-
-    public Vector3 getAnchor(GameObject g){
-        BoxCollider boxCollider = g.GetComponent<BoxCollider>();
-
-        Vector3 center = boxCollider.center;
-        Vector3 size = boxCollider.size;
-
-        Vector3 leftAnchor = center - new Vector3(size.x / 2, 0, 0);
-
-        return leftAnchor;
+    
+    private void StoreOriginalState(GameObject obj) 
+    {
+        if (!originalStates.ContainsKey(obj))
+        {
+            Vector3 originalPosition = obj.transform.position;
+            Quaternion originalRotation = obj.transform.rotation;
+            Vector3 originalScale = obj.transform.localScale;
+        
+            originalStates.Add(obj, new ObjectState(originalPosition, originalRotation, originalScale));
+        }
     }
+    
+    private void ResetObjectState(GameObject obj)
+    {
+        if (originalStates.ContainsKey(obj))
+        {
+            ObjectState state = originalStates[obj];
 
-    public Vector3 sizeCompare(GameObject object1, GameObject object2){
-        Vector3 size1 = object1.GetComponent<BoxCollider>().bounds.size;
-        Vector3 size2 = object2.GetComponent<BoxCollider>().bounds.size;
-
-        Vector3 scale1 = object1.transform.localScale;
-        Vector3 scale2 = object2.transform.localScale;
-
-        Vector3 relativeSize = new Vector3(size1.x / scale1.x / (size2.x / scale2.x),
-                                        size1.y / scale1.y / (size2.y / scale2.y),
-                                        size1.z / scale1.z / (size2.z / scale2.z));
-        
-        return relativeSize;
-}
-
-public void updateObjects()
-{ 
-    // Vector3 parentAnchor = getAnchor(parent); 
-
-    // Dictionary<string, (float, Vector3)> objectPositions = new Dictionary<string, (float, Vector3)>();
-
-    // foreach(Transform t in parentObjects.transform){
-    //     Vector3 position = t.position;
-
-    //     float dist = (parentAnchor - position).magnitude;
-    //     Vector3 direction = (parentAnchor - position).normalized;
-        
-    //     objectPositions.Add(t.name, (dist, direction));
-    // }
-
-    // foreach(GameObject child in children){              
-    //     Vector3 relativeSize = sizeCompare(child, parent);
-    //     Vector3 childAnchor = getAnchor(child);
-
-    //     GameObject childObjects = child.transform.Find((child.name + "objects")).gameObject;
-
-    //     foreach(Transform obj in childObjects.transform){
-    //         string objectName = (obj.name).Replace(child.name, "");
-
-    //         if(objectPositions.ContainsKey(objectName)){
-    //             Debug.Log(obj.name);
-
-    //             var objectPosition = objectPositions[objectName];
-
-    //             float objDist = objectPosition.Item1 * relativeSize.magnitude;
-    //             Vector3 objDir = objectPosition.Item2;
-
-    //             obj.position = parentAnchor;
-    //         }
-    //     }
-    // }
- }
-
-    //  private void StoreOriginalState(GameObject obj) 
-    // {
-    //     if (!originalStates.ContainsKey(obj))
-    //     {
-    //         Vector3 originalPosition = obj.transform.position;
-    //         Vector3 originalScale = obj.transform.localScale;
-    //         originalStates.Add(obj, new ObjectState(originalPosition, originalScale));
-    //     }
-    // }
-
-    // private void ResetObjectState(GameObject obj)
-    // {
-    //     if (originalStates.ContainsKey(obj))
-    //     {
-    //         ObjectState state = originalStates[obj];
-    //         obj.transform.position = state.position;
-    //         obj.transform.localScale = state.scale;
-    //     }
-    // }
+            obj.transform.position = state.position;
+            obj.transform.rotation = state.rotation;
+            obj.transform.localScale = state.scale;
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        // StoreOriginalState(parent);
+        StoreOriginalState(parent);
         
-        // foreach(GameObject child in children){
-        //     StoreOriginalState(child);
-        // }
+        foreach(GameObject child in children){
+            StoreOriginalState(child);
+        }
 
         setEnv();
+        createChildObjects();
         placeChildren();            
     }
 
     // Update is called once per frame
     void Update()
     {
-        updateObjects();
+        if(OVRInput.Get(OVRInput.RawButton.X)){
+            if(selectedChild != null){
+                changeParent();
+            }
+        }
     }
 
 }
