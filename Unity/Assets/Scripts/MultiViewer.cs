@@ -12,7 +12,7 @@ public class MultiViewer : MonoBehaviour
     
     private GameObject parentCopy;
 
-    private GameObject selectedChild = null;
+    private GameObject selectedGameObject = null;
    
     private Dictionary<GameObject, ObjectState> originalStates = new Dictionary<GameObject, ObjectState>();
 
@@ -49,17 +49,11 @@ public class MultiViewer : MonoBehaviour
         clearEnv(); 
 
         parent.SetActive(true);
+        parentObjects = this.transform.Find("objects").gameObject;
 
         parentCopy = Instantiate(parent);
         parentCopy.transform.parent = transform;
         parentCopy.name = "parentCopy";
-
-        disableInteraction(parent);
-
-        parentObjects = transform.Find("objects").gameObject;
-        parentObjects.transform.parent = parent.transform;
-
-        children.Add(parentCopy);
 
         GameObject copy = Instantiate(parentObjects); //To be cleaned up!
         copy.transform.parent = parentCopy.transform;
@@ -68,6 +62,14 @@ public class MultiViewer : MonoBehaviour
         foreach(Transform t in copy.transform){
             t.name = "parentCopy" + t.name;
         }
+        Destroy(copy);
+
+        disableInteraction(parent);
+
+        parentObjects.transform.parent = parent.transform;
+
+        children.Add(parentCopy);
+
 
         Debug.Log("Set Env Finished");
     }
@@ -86,8 +88,8 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
-    public void setSelectedChild(GameObject g){
-        selectedChild = g;
+    public void setSelectedGameObject(GameObject g){
+        selectedGameObject = g;
     }
 
    public void placeChildren()
@@ -102,8 +104,6 @@ public class MultiViewer : MonoBehaviour
             GameObject g = children[i];
             g.SetActive(true);
 
-            Debug.Log("Set active" + g.name);
-
             float scale = getScale(g);
 
             g.transform.localScale = new Vector3(scale, scale, scale);
@@ -114,14 +114,56 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
-    public void placeChildObjects(){
+     public void placeChildObjects()
+    {
+        GameObject parentLeftAnchor = parent.transform.Find("TopLeft").gameObject;
+        GameObject parentRightAnchor = parent.transform.Find("BottomRight").gameObject;
 
-        Dictionary<string, (Vector3, float)> parentObjectLocations = new Dictionary<string, (Vector3, float)>();
+        float parentWidth = parentRightAnchor.transform.position.x - parentLeftAnchor.transform.position.x;
+        float parentHeight = parentRightAnchor.transform.position.y - parentLeftAnchor.transform.position.y;
+        float parentDepth = parentRightAnchor.transform.position.z - Camera.main.transform.position.z;
 
-        GameObject parentTopLeft = parent.Find("TopLeft");
+        Dictionary<string, (Vector3, Quaternion)> parentObjectLocations = new Dictionary<string, (Vector3, Quaternion)>();
 
-        foreach(Transform object in parent.transform){
-            
+        foreach (Transform obj in parentObjects.transform)
+        {
+            Vector3 distance = obj.position - parentLeftAnchor.transform.position;
+            Quaternion rotation = obj.rotation;
+
+            parentObjectLocations.Add(obj.name, (distance, rotation));
+        }
+
+        foreach (GameObject child in children)
+        {
+            GameObject childLeftAnchor = child.transform.Find("TopLeft").gameObject;
+            GameObject childRightAnchor = child.transform.Find("BottomRight").gameObject;
+
+            float childWidth = childRightAnchor.transform.position.x - childLeftAnchor.transform.position.x;
+            float childHeight = childRightAnchor.transform.position.y - childLeftAnchor.transform.position.y;
+            float childDepth = childRightAnchor.transform.position.z - Camera.main.transform.position.z; // Replace with depth to avatar
+
+            float widthScale = childWidth / parentWidth;
+            float heightScale = childHeight / parentHeight;
+            float depthScale = childDepth / parentDepth;
+
+            Transform childObjects = child.transform.Find((child.name + "objects"));
+
+            foreach (Transform obj in childObjects)
+            {
+                var parentObject = parentObjectLocations[obj.name.Replace(child.name, "")];
+
+                Vector3 distance = parentObject.Item1;
+
+                // Debug.Log("Distance: " + obj.name + " " + distance);
+
+                obj.position = new Vector3(
+                    childLeftAnchor.transform.position.x + distance.x * widthScale,
+                    childLeftAnchor.transform.position.y + distance.y * heightScale,
+                    childLeftAnchor.transform.position.z + distance.z * depthScale
+                );
+
+                obj.rotation = parentObject.Item2;
+            }
         }
     }
 
@@ -143,16 +185,14 @@ public class MultiViewer : MonoBehaviour
         parentObjects.transform.parent = this.transform;
         
         foreach(GameObject child in children){
-            Destroy(transform.Find(child.name + "objects"));
+            Destroy(child.GetComponent(child.name + "objects"));
             ResetObjectState(child);
         }
 
         ResetObjectState(parent);
         children.Add(parent);
 
-        parent = selectedChild;
-
-        setSelectedChild(null);
+        parent = selectedGameObject; //Add Check
         
         setEnv();
 
@@ -171,6 +211,15 @@ public class MultiViewer : MonoBehaviour
         GameObject RayGrabInteraction = g.transform.Find("ISDK_RayGrabInteraction").gameObject;
         RayGrabInteraction?.SetActive(true);
 
+    }
+
+    public void moveObject(bool dir){
+        if(dir){
+            selectedGameObject.transform.position += new Vector3(0, 0, 5f);
+        }
+        else{
+            selectedGameObject.transform.position += new Vector3(0, 0, -5f);
+        }
     }
     
     private void StoreOriginalState(GameObject obj) 
@@ -197,6 +246,8 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
+    // private void ResetRotation(GameObject obg)
+
     // Start is called before the first frame update
     void Start()
     {
@@ -215,10 +266,24 @@ public class MultiViewer : MonoBehaviour
     void Update()
     {
         if(OVRInput.Get(OVRInput.RawButton.X)){
-            if(selectedChild != null){
+            if(selectedGameObject != null){
                 changeParent();
             }
         }
+
+        if(OVRInput.Get(OVRInput.RawButton.LThumbstickUp)){
+            if(selectedGameObject != null){
+                moveObject(true);
+            }
+        }
+
+        if(OVRInput.Get(OVRInput.RawButton.LThumbstickDown)){
+            if(selectedGameObject != null){
+                moveObject(false);
+            }
+        }
+
+        placeChildObjects();
     }
 
 }

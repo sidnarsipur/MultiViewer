@@ -8,13 +8,13 @@ public class Miniature : MonoBehaviour
         Debug.Log("Selected");
 
         MultiViewer m = GameObject.Find("MultiViewer").GetComponent<MultiViewer>();
-        m.setSelectedChild(g);
+        m.setSelectedGameObject(g);
     }
 
     public void unselectChild(){
         Debug.Log("Unselected");
 
         MultiViewer m = GameObject.Find("MultiViewer").GetComponent<MultiViewer>();
-        m.setSelectedChild(null);
+        m.setSelectedGameObject(null);
     }
 }
