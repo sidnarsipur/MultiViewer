@@ -5,14 +5,12 @@ using UnityEngine;
 public class Miniature : MonoBehaviour
 {
     public void selectChild(GameObject g){
-        Debug.Log("Selected");
 
         MultiViewer m = GameObject.Find("MultiViewer").GetComponent<MultiViewer>();
         m.setSelectedGameObject(g);
     }
 
     public void unselectChild(){
-        Debug.Log("Unselected");
 
         MultiViewer m = GameObject.Find("MultiViewer").GetComponent<MultiViewer>();
         m.setSelectedGameObject(null);
