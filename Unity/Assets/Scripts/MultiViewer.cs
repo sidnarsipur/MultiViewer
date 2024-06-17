@@ -92,10 +92,6 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
-    public void setSelectedGameObject(GameObject g){
-        selectedGameObject = g;
-    }
-
    public void placeChildren()
     {
         int numObjects = children.Count;
@@ -222,8 +218,8 @@ public class MultiViewer : MonoBehaviour
     public void moveObject(bool dir){
         if(dir){
             print(selectedGameObject.transform.position);
-            selectedGameObject.transform.position = new Vector3(100, 100, 10f);
-            print(selectedGameObject.transform.position);
+            Rigidbody rb = selectedGameObject.GetComponent<Rigidbody>();
+            rb.MovePosition(selectedGameObject.transform.position + new Vector3(0, 0, 100f));
         }
         else{
             selectedGameObject.transform.position = new Vector3(10990, 10000, -10f);
@@ -254,7 +250,13 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
-    // private void ResetRotation(GameObject obg)
+     public void setSelectedGameObject(GameObject g){
+        // if(g == null){
+        //     Rigidbody rb = selectedGameObject.GetComponent<Rigidbody>();
+        //     rb.MovePosition(selectedGameObject.transform.position + new Vector3(0, 0, 100f));
+        // }
+        selectedGameObject = g;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -279,12 +281,16 @@ public class MultiViewer : MonoBehaviour
         //     }
         // }
 
-        if(OVRInput.Get(OVRInput.RawButton.LThumbstickUp)){
-            GameObject test = this.transform.Find("StudyRoom").gameObject;
-            selectedGameObject.transform.position += new Vector3(0, 0, 0.2f);
-            if(selectedGameObject != null){
-                moveObject(true);
-            }
+        if(OVRInput.Get(OVRInput.RawButton.X)){
+             Debug.Log("Hello");
+             selectedGameObject.<Miniature>().moveChild();
+            // // GameObject test = this.transform.Find("StudyRoom").gameObject;
+            // // selectedGameObject.transform.position += new Vector3(0, 0, 0.2f);
+            // if(selectedGameObject != null){
+            //     Debug.Log("Reached");
+            //     moveObject(true);
+            //     print(selectedGameObject.transform.position);
+            // }
         }
 
         if(OVRInput.Get(OVRInput.RawButton.LThumbstickDown)){

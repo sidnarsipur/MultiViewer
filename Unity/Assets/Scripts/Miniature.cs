@@ -4,15 +4,22 @@ using UnityEngine;
 
 public class Miniature : MonoBehaviour
 {
-    public void selectChild(GameObject g){
+    public void selectChild(){
 
-        MultiViewer m = GameObject.Find("MultiViewer").GetComponent<MultiViewer>();
-        m.setSelectedGameObject(g);
+        Debug.Log("Selecting Child: " + gameObject.name);
+        // g.transform.position += new Vector3(0, 0, 100f);
+
+        MultiViewer m = gameObject.GetComponent<MultiViewer>();
+        m.setSelectedGameObject(gameObject);
     }
 
     public void unselectChild(){
 
-        MultiViewer m = GameObject.Find("MultiViewer").GetComponent<MultiViewer>();
+        MultiViewer m = gameObject.GetComponent<MultiViewer>();
         m.setSelectedGameObject(null);
+    }
+
+    public void moveChild(){
+        gameObject.transform.position += new Vector3(0, 0, 100f);
     }
 }
