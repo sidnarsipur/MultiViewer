@@ -138,9 +138,6 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
-
-
-
      public void placeChildObjects()
     {
         GameObject parentLeftAnchor = parent.transform.Find("TopLeft").gameObject;
@@ -315,10 +312,8 @@ public class MultiViewer : MonoBehaviour
     
     private void ResetObjectState(GameObject obj)
     {
-        Debug.Log("Called for " + obj.name);
         if (originalStates.ContainsKey(obj.name))
         {
-             Debug.Log("Found for " + obj.name);
             ObjectState state = originalStates[obj.name];
 
             obj.transform.position = state.position;
@@ -326,7 +321,24 @@ public class MultiViewer : MonoBehaviour
             obj.transform.localScale = state.scale;
         }
         else{
-             Debug.Log("NOT FOUND for " + obj.name);
+            Debug.Log("Object not found in original states");
+        }
+    }
+
+    private void moveObject(bool dir){
+        if(selectedGameObject != null){
+            GameObject g = selectedGameObject;
+        
+            disableInteraction(g);
+        
+            Rigidbody rb = g.GetComponent<Rigidbody>();
+            if(dir){
+                rb.MovePosition(new Vector3(g.transform.position.x, g.transform.position.y, g.transform.position.z + 0.1f));
+            }else{
+                rb.MovePosition(new Vector3(g.transform.position.x, g.transform.position.y, g.transform.position.z - 0.1f));
+            }
+
+            enableInteraction(g);
         }
     }
 
@@ -354,7 +366,14 @@ public class MultiViewer : MonoBehaviour
             }
         }
 
+        if(OVRInput.Get(OVRInput.RawButton.LThumbstickUp) || OVRInput.Get(OVRInput.RawButton.RThumbstickUp){
+            moveObject(true);
+        }
+
+        if(OVRInput.Get(OVRInput.RawButton.LThumbstickDown) || OVRInput.Get(OVRInput.RawButton.RThumbstickDown){
+            moveObject(false);
+        }
+
         placeChildObjects();
     }
-
 }

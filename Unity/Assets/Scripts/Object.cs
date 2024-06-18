@@ -11,12 +11,6 @@ public class Object : MonoBehaviour
         m = multiViewerGameObject.GetComponent<MultiViewer>();
     }
 
-    void Update(){
-        if(OVRInput.Get(OVRInput.RawButton.LThumbstickUp)){
-            moveObject();
-        }
-    }
-
     public void selectChild(GameObject g){
         Debug.Log(g.name + " SELECTED");
         m.setSelectedGameObject(g);
@@ -25,9 +19,4 @@ public class Object : MonoBehaviour
     public void unselectChild(){
         m.setSelectedGameObject(null);
     }
-
-    public void moveObject(){
-        gameObject.transform.position += new Vector3(0, 0, 0.01f);
-    }
-
 }
