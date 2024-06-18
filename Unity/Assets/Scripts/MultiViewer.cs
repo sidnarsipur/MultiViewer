@@ -119,6 +119,13 @@ public class MultiViewer : MonoBehaviour
             float scale = getScale(g);
             g.transform.localScale = new Vector3(scale, scale, scale);
 
+            float objScale = getObjectScale(g);
+
+            if(objScale != 0){
+                GameObject childObjects = g.transform.Find((g.name + "objects")).gameObject;
+                childObjects.transform.localScale = new Vector3(objScale, objScale, objScale);
+            }
+
             float angle = startAngle + angleStep * i;
             
             float x = centerX + a * Mathf.Cos(angle);
@@ -196,6 +203,16 @@ public class MultiViewer : MonoBehaviour
           if (e != null)
             {
                 return e.scale;
+            }
+            return 0;
+    }
+
+    private float getObjectScale(GameObject g){
+         Environment e = g.GetComponent<Environment>();
+
+          if (e != null)
+            {
+                return e.objScale;
             }
             return 0;
     }

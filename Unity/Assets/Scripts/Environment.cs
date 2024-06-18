@@ -6,6 +6,7 @@ public class Environment : MonoBehaviour
 {
 
     public float scale;
+    public float objScale;
     // public GameObject gb;
     
     // Start is called before the first frame update
