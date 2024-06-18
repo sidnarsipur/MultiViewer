@@ -12,7 +12,6 @@ public class Object : MonoBehaviour
     }
 
     public void selectChild(GameObject g){
-        Debug.Log(g.name + " SELECTED");
         m.setSelectedGameObject(g);
     }
 
