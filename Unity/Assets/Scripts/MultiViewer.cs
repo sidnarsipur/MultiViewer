@@ -90,28 +90,49 @@ public class MultiViewer : MonoBehaviour
             }
         }
     }
-
-   public void placeChildren()
+    
+    public void placeChildren()
     {
-        int numObjects = children.Count;
+        GameObject parentLeftAnchor = parent.transform.Find("TopLeft").gameObject;
+        GameObject parentRightAnchor = parent.transform.Find("BottomRight").gameObject;
+        
+        float minX = parentLeftAnchor.transform.position.x;
+        float maxX = parentRightAnchor.transform.position.x;
+        float width = maxX - minX;
 
-        Vector3 size = parent.GetComponent<BoxCollider>().size;
-        float width = size.x / (numObjects * 1.5f);
+        Camera mainCamera = Camera.main;
+        
+        float centerX = mainCamera.transform.position.x + 0.25f;
+        float centerZ = mainCamera.transform.position.z;
 
-        for (int i = 0; i < numObjects; i++)
+        float a = 0.5f; 
+        float b = 0.4f;
+
+        float angleStep = -1.3f; 
+        float startAngle = 3.5f;  
+
+        for (int i = 0; i < children.Count; i++)
         {
             GameObject g = children[i];
             g.SetActive(true);
-
+            
             float scale = getScale(g);
-
             g.transform.localScale = new Vector3(scale, scale, scale);
 
-            float x = parent.transform.position.x - (size.x/4) + width * (i+1);
-            Vector3 objectPosition = new Vector3(x, 0.0f, 0.5f);              
+            float angle = startAngle + angleStep * i;
+            
+            float x = centerX + a * Mathf.Cos(angle);
+            float z = centerZ + b * Mathf.Sin(angle);
+            
+            x = Mathf.Clamp(x, minX, maxX);
+            
+            Vector3 objectPosition = new Vector3(x, mainCamera.transform.position.y + 0.2f, z);
             g.transform.position = objectPosition;
         }
     }
+
+
+
 
      public void placeChildObjects()
     {
