@@ -9,12 +9,11 @@ public class MultiViewer : MonoBehaviour
     public List<GameObject> children;
 
     private GameObject parentObjects;
-    
     private GameObject parentCopy;
 
     private GameObject selectedGameObject = null;
    
-    private Dictionary<GameObject, ObjectState> originalStates = new Dictionary<GameObject, ObjectState>();
+    private Dictionary<string, ObjectState> originalStates = new Dictionary<string, ObjectState>();
 
     private class ObjectState
     {
@@ -149,14 +148,15 @@ public class MultiViewer : MonoBehaviour
             float depthScale = childDepth / parentDepth;
 
             Transform childObjects = child.transform.Find((child.name + "objects"));
+            if(childObjects == null){
+                Debug.Log("Could not find for " + child.name);
+            }
 
             foreach (Transform obj in childObjects)
             {
                 var parentObject = parentObjectLocations[obj.name.Replace(child.name, "")];
 
                 Vector3 distance = parentObject.Item1;
-
-                // Debug.Log("Distance: " + obj.name + " " + distance);
 
                 obj.position = new Vector3(
                     childLeftAnchor.transform.position.x + distance.x * widthScale,
@@ -179,26 +179,74 @@ public class MultiViewer : MonoBehaviour
             return 0;
     }
 
-    public void changeParent()
+    public void setSelectedGameObject(GameObject g){ 
+        if (g != null){
+        Debug.Log("Selecting Child: " + g.name);
+        }
+        selectedGameObject = g;
+    }
+
+    public void changeParent(GameObject newParent)
     {   
-        // children.Remove(parentCopy);
-        // Destroy(parentCopy);
+        if(newParent.name == parent.name){
+            return;
+        }
 
-        // parentObjects.transform.parent = this.transform;
+        //Reset Interactions
+        disableInteraction(newParent);
+        enableInteraction(parent);
         
-        // foreach(GameObject child in children){
-        //     Destroy(child.GetComponent(child.name + "objects"));
-        //     ResetObjectState(child);
-        // }
+        //Reset Children
+        children.Remove(newParent);
+        children.Remove(parentCopy);
 
-        // ResetObjectState(parent);
-        // children.Add(parent);
+        Destroy(parentCopy);
 
-        // parent = selectedGameObject; //Add Check
-        
-        // setEnv();
+        //Reset original parent's scale, objects and avatar
+        float scale = getScale(parent);
+        parent.transform.localScale = new Vector3(scale, scale, scale);
+        children.Add(parent);
 
-        // placeChildren();
+        GameObject parentAvatar = parent.transform.Find("Avatar").gameObject;
+        parentAvatar.SetActive(true);
+
+        //Reset original parent's objects
+        parentObjects.name = parent.name + "objects";
+
+        foreach(Transform obj in parentObjects.transform){
+            obj.name = parent.name + obj.name;
+        }
+
+        //Create a copy of the new parent
+        parentCopy = Instantiate(newParent);
+        parentCopy.name = "parentCopy";
+        parentCopy.transform.parent = transform;
+
+        GameObject parentCopyObjects = parentCopy.transform.Find((newParent.name + "objects")).gameObject;
+        parentCopyObjects.name = "parentCopyobjects";
+
+        foreach(Transform obj in parentCopyObjects.transform){
+            obj.name = parentCopy.name + obj.name.Replace(newParent.name, "");
+        }
+
+        children.Add(parentCopy);
+
+        //Make the new parent larger, rename its objects and disable its avatar
+        ResetObjectState(newParent);
+
+        parent = newParent;
+
+        parentAvatar = parent.transform.Find("Avatar").gameObject;
+        parentAvatar.SetActive(false);
+
+        parentObjects = parent.transform.Find((parent.name + "objects")).gameObject;
+        parentObjects.name = "objects";
+
+        foreach(Transform obj in parentObjects.transform){
+            obj.name = obj.name.Replace(parent.name, "");
+        }
+
+        placeChildren();
     }
 
     public void disableInteraction(GameObject g)
@@ -214,49 +262,36 @@ public class MultiViewer : MonoBehaviour
         RayGrabInteraction?.SetActive(true);
 
     }
-
-    public void moveObject(bool dir){
-        if(dir){
-            print(selectedGameObject.transform.position);
-            Rigidbody rb = selectedGameObject.GetComponent<Rigidbody>();
-            rb.MovePosition(selectedGameObject.transform.position + new Vector3(0, 0, 100f));
-        }
-        else{
-            selectedGameObject.transform.position = new Vector3(10990, 10000, -10f);
-        }
-    }
     
     private void StoreOriginalState(GameObject obj) 
     {
-        if (!originalStates.ContainsKey(obj))
+        if (!originalStates.ContainsKey(obj.name))
         {
             Vector3 originalPosition = obj.transform.position;
             Quaternion originalRotation = obj.transform.rotation;
             Vector3 originalScale = obj.transform.localScale;
         
-            originalStates.Add(obj, new ObjectState(originalPosition, originalRotation, originalScale));
+            originalStates.Add(obj.name, new ObjectState(originalPosition, originalRotation, originalScale));
         }
     }
     
     private void ResetObjectState(GameObject obj)
     {
-        if (originalStates.ContainsKey(obj))
+        Debug.Log("Called for " + obj.name);
+        if (originalStates.ContainsKey(obj.name))
         {
-            ObjectState state = originalStates[obj];
+             Debug.Log("Found for " + obj.name);
+            ObjectState state = originalStates[obj.name];
 
             obj.transform.position = state.position;
             obj.transform.rotation = state.rotation;
             obj.transform.localScale = state.scale;
         }
+        else{
+             Debug.Log("NOT FOUND for " + obj.name);
+        }
     }
 
-     public void setSelectedGameObject(GameObject g){
-        // if(g == null){
-        //     Rigidbody rb = selectedGameObject.GetComponent<Rigidbody>();
-        //     rb.MovePosition(selectedGameObject.transform.position + new Vector3(0, 0, 100f));
-        // }
-        selectedGameObject = g;
-    }
 
     // Start is called before the first frame update
     void Start()
@@ -275,27 +310,9 @@ public class MultiViewer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // if(OVRInput.Get(OVRInput.RawButton.X)){
-        //     if(selectedGameObject != null){
-        //         changeParent();
-        //     }
-        // }
-
         if(OVRInput.Get(OVRInput.RawButton.X)){
-             Debug.Log("Hello");
-             selectedGameObject.<Miniature>().moveChild();
-            // // GameObject test = this.transform.Find("StudyRoom").gameObject;
-            // // selectedGameObject.transform.position += new Vector3(0, 0, 0.2f);
-            // if(selectedGameObject != null){
-            //     Debug.Log("Reached");
-            //     moveObject(true);
-            //     print(selectedGameObject.transform.position);
-            // }
-        }
-
-        if(OVRInput.Get(OVRInput.RawButton.LThumbstickDown)){
             if(selectedGameObject != null){
-                moveObject(false);
+                changeParent(selectedGameObject);
             }
         }
 

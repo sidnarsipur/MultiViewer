@@ -60,7 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\MultiViewer.cs" />
-    <Compile Include="Assets\Scripts\Miniature.cs" />
+    <Compile Include="Assets\Scripts\Object.cs" />
     <Compile Include="Assets\Scripts\Environment.cs" />
   </ItemGroup>
   <ItemGroup>
