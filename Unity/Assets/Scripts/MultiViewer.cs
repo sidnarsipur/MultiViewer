@@ -96,7 +96,7 @@ public class MultiViewer : MonoBehaviour
         GameObject parentLeftAnchor = parent.transform.Find("TopLeft").gameObject;
         GameObject parentRightAnchor = parent.transform.Find("BottomRight").gameObject;
         
-        float minX = parentLeftAnchor.transform.position.x;
+        float minX = parentLeftAnchor.transform.position.x + 0.25f;
         float maxX = parentRightAnchor.transform.position.x;
         float width = maxX - minX;
 
@@ -105,11 +105,13 @@ public class MultiViewer : MonoBehaviour
         float centerX = mainCamera.transform.position.x + 0.25f;
         float centerZ = mainCamera.transform.position.z;
 
-        float a = 0.5f; 
-        float b = 0.4f;
+        float a = 1f; 
+        float b = 0.2f;
 
-        float angleStep = -1.3f; 
-        float startAngle = 3.5f;  
+        float angleStep = -Mathf.PI / 8; 
+        float startAngle = 2.35619f;  
+
+        float prevX = Mathf.Max(minX, centerX - 0.5f); 
 
         for (int i = 0; i < children.Count; i++)
         {
@@ -123,18 +125,32 @@ public class MultiViewer : MonoBehaviour
 
             if(objScale != 0){
                 GameObject childObjects = g.transform.Find((g.name + "objects")).gameObject;
+                
                 childObjects.transform.localScale = new Vector3(objScale, objScale, objScale);
             }
 
             float angle = startAngle + angleStep * i;
+
+            float prevChildWidth;
             
-            float x = centerX + a * Mathf.Cos(angle);
+            if(i != 0){
+                prevChildWidth = getWidth(children[i-1]);
+            }
+            else{
+                prevChildWidth = 0;
+            }
+
+            float x = prevX + prevChildWidth;
             float z = centerZ + b * Mathf.Sin(angle);
             
             x = Mathf.Clamp(x, minX, maxX);
+
+            Debug.Log("Y Position is " + mainCamera.transform.position.y);
             
-            Vector3 objectPosition = new Vector3(x, mainCamera.transform.position.y + 0.2f, z);
+            Vector3 objectPosition = new Vector3(x, mainCamera.transform.position.y - 0.2f,  mainCamera.transform.position.z + 0.25f);
             g.transform.position = objectPosition;
+
+            prevX = getRightAnchor(g).transform.position.x;
         }
     }
 
@@ -204,14 +220,23 @@ public class MultiViewer : MonoBehaviour
             return 0;
     }
 
+    private float getWidth(GameObject g){
+        GameObject leftAnchor = g.transform.Find("TopLeft").gameObject;
+        GameObject rightAnchor = g.transform.Find("BottomRight").gameObject;
+
+        return (rightAnchor.transform.position.x - leftAnchor.transform.position.x);
+    }
+
+    private GameObject getRightAnchor(GameObject g){
+        GameObject rightAnchor = g.transform.Find("BottomRight").gameObject;
+
+        return rightAnchor;
+    }
+
     private float getObjectScale(GameObject g){
          Environment e = g.GetComponent<Environment>();
-
-          if (e != null)
-            {
-                return e.objScale;
-            }
-            return 0;
+         
+         return e.objScale;
     }
 
     public void setSelectedGameObject(GameObject g){ 
@@ -223,7 +248,7 @@ public class MultiViewer : MonoBehaviour
 
     public void changeParent(GameObject newParent)
     {   
-        if(newParent.name == parent.name){
+        if(string.Equals(newParent.name, "parentCopy")){
             return;
         }
 
@@ -257,6 +282,8 @@ public class MultiViewer : MonoBehaviour
         parentCopy.name = "parentCopy";
         parentCopy.transform.parent = transform;
 
+        enableInteraction(parentCopy);
+
         GameObject parentCopyObjects = parentCopy.transform.Find((newParent.name + "objects")).gameObject;
         parentCopyObjects.name = "parentCopyobjects";
 
@@ -281,7 +308,10 @@ public class MultiViewer : MonoBehaviour
             obj.name = obj.name.Replace(parent.name, "");
         }
 
+        Camera.main.transform.position = new Vector3(0, 0, 0); 
+
         placeChildren();
+
     }
 
     public void disableInteraction(GameObject g)
@@ -333,9 +363,9 @@ public class MultiViewer : MonoBehaviour
         
             Rigidbody rb = g.GetComponent<Rigidbody>();
             if(dir){
-                rb.MovePosition(new Vector3(g.transform.position.x, g.transform.position.y, g.transform.position.z + 0.1f));
+                rb.MovePosition(new Vector3(g.transform.position.x, g.transform.position.y, g.transform.position.z + 0.3f));
             }else{
-                rb.MovePosition(new Vector3(g.transform.position.x, g.transform.position.y, g.transform.position.z - 0.1f));
+                rb.MovePosition(new Vector3(g.transform.position.x, g.transform.position.y, g.transform.position.z - 0.3f));
             }
 
             enableInteraction(g);
