@@ -19,9 +19,4 @@ public class Environment : MonoBehaviour
     {
         
     }
-
-    void OnCollisionEnter(Collision collision)
-    {
-        // Debug.Log(gameObject.name + " Collided with: " + collision.gameObject.name);
-    }
 }

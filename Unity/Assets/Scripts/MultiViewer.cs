@@ -105,7 +105,6 @@ public class MultiViewer : MonoBehaviour
         float centerX = mainCamera.transform.position.x + 0.25f;
         float centerZ = mainCamera.transform.position.z;
 
-        float a = 1f; 
         float b = 0.2f;
 
         float angleStep = -Mathf.PI / 8; 
@@ -144,10 +143,8 @@ public class MultiViewer : MonoBehaviour
             float z = centerZ + b * Mathf.Sin(angle);
             
             x = Mathf.Clamp(x, minX, maxX);
-
-            Debug.Log("Y Position is " + mainCamera.transform.position.y);
             
-            Vector3 objectPosition = new Vector3(x, mainCamera.transform.position.y - 0.2f,  mainCamera.transform.position.z + 0.25f);
+            Vector3 objectPosition = new Vector3(x, mainCamera.transform.position.y - 0.1f,  mainCamera.transform.position.z + 0.25f);
             g.transform.position = objectPosition;
 
             prevX = getRightAnchor(g).transform.position.x;
@@ -193,21 +190,63 @@ public class MultiViewer : MonoBehaviour
                 Debug.Log("Could not find for " + child.name);
             }
 
-            foreach (Transform obj in childObjects)
+            foreach (Transform t in childObjects)
             {
-                var parentObject = parentObjectLocations[obj.name.Replace(child.name, "")];
+                Object obj = t.gameObject.GetComponent<Object>();
 
+                var parentObject = parentObjectLocations[t.name.Replace(child.name, "")];
                 Vector3 distance = parentObject.Item1;
-
-                obj.position = new Vector3(
+            
+                Vector3 newPosition = new Vector3(
                     childLeftAnchor.transform.position.x + distance.x * widthScale,
                     childLeftAnchor.transform.position.y + distance.y * heightScale,
                     childLeftAnchor.transform.position.z + distance.z * depthScale
                 );
 
-                obj.rotation = parentObject.Item2;
+                Quaternion newRotation = parentObject.Item2;
+                
+                // Vector3 oldPosition = t.position;
+                // Quaternion oldRotation = t.rotation;
+
+                t.position = newPosition;
+                t.rotation = newRotation;
+
+                // Collider objCollider = t.gameObject.GetComponent<Collider>();
+
+                // if (!IsCollidingAtPosition(objCollider, newPosition, newRotation, t.gameObject.name)){
+                //     t.position = oldPosition;
+                //     t.rotation = oldRotation;
+                // }
+                // else{
+                //     t.position = newPosition;
+                //     t.rotation = newRotation;
+                // }
             }
         }
+    }
+
+    bool IsCollidingAtPosition(Collider objCollider, Vector3 position, Quaternion rotation, string name)
+    {
+        BoxCollider boxCollider = objCollider as BoxCollider;
+        if (boxCollider != null)
+        {
+            Vector3 center = position + rotation * boxCollider.center;
+            Vector3 halfExtents = boxCollider.size / 2;
+
+            Collider[] hitColliders = Physics.OverlapBox(center, halfExtents, rotation, ~0, QueryTriggerInteraction.Ignore);
+
+            foreach (var hitCollider in hitColliders)
+            {
+                if (hitCollider.CompareTag("Boundary"))
+                {
+                    Debug.Log(name + " Collided with boundary");
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return false;
     }
 
     private float getScale(GameObject g){
@@ -360,12 +399,19 @@ public class MultiViewer : MonoBehaviour
             GameObject g = selectedGameObject;
         
             disableInteraction(g);
-        
             Rigidbody rb = g.GetComponent<Rigidbody>();
+
+            Camera camera = Camera.main;
+            Vector3 cameraDir = (camera.transform.position - g.transform.position).normalized;
+
+            float moveStep = 0.4f;
+            // Vector3 newPosition = g.transform.position + cameraDir * moveStep;
+
             if(dir){
-                rb.MovePosition(new Vector3(g.transform.position.x, g.transform.position.y, g.transform.position.z + 0.3f));
-            }else{
-                rb.MovePosition(new Vector3(g.transform.position.x, g.transform.position.y, g.transform.position.z - 0.3f));
+                rb.MovePosition(g.transform.position + cameraDir * -moveStep);
+            }
+            else{
+                rb.MovePosition(g.transform.position + cameraDir * moveStep);
             }
 
             enableInteraction(g);
