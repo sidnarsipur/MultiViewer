@@ -159,7 +159,7 @@ public class MultiViewer : MonoBehaviour
 
         float parentWidth = parentRightAnchor.transform.position.x - parentLeftAnchor.transform.position.x;
         float parentHeight = parentRightAnchor.transform.position.y - parentLeftAnchor.transform.position.y;
-        float parentDepth = parentRightAnchor.transform.position.z - Camera.main.transform.position.z;
+        float parentDepth = parentRightAnchor.transform.position.z - Camera.main.transform.position.z; //Should be based on parent avatar, not camera. Smaller active region?
 
         Dictionary<string, (Vector3, Quaternion)> parentObjectLocations = new Dictionary<string, (Vector3, Quaternion)>();
 
