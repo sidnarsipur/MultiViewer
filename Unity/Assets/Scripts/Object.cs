@@ -6,7 +6,7 @@ public class Object : MonoBehaviour
 {
     MultiViewer m;
 
-    private bool collided;
+    private bool collided = false;
 
     void Start(){
         GameObject multiViewerGameObject = GameObject.Find("MultiViewer");

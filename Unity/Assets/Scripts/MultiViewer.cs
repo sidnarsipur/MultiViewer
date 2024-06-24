@@ -144,7 +144,8 @@ public class MultiViewer : MonoBehaviour
             
             x = Mathf.Clamp(x, minX, maxX);
             
-            Vector3 objectPosition = new Vector3(x, mainCamera.transform.position.y - 0.1f,  mainCamera.transform.position.z + 0.25f);
+            // Vector3 objectPosition = new Vector3(x, mainCamera.transform.position.y - 0.1f,  mainCamera.transform.position.z + 0.25f);
+            Vector3 objectPosition = new Vector3(x, mainCamera.transform.position.y + 0.5f,  mainCamera.transform.position.z + 0.3f);
             g.transform.position = objectPosition;
 
             prevX = getRightAnchor(g).transform.position.x;
@@ -204,48 +205,31 @@ public class MultiViewer : MonoBehaviour
                 );
 
                 Quaternion newRotation = parentObject.Item2;
-                
-                // Vector3 oldPosition = t.position;
-                // Quaternion oldRotation = t.rotation;
 
-                t.position = newPosition;
+                BoxCollider boxCollider = t.gameObject.GetComponent<BoxCollider>();
+
                 t.rotation = newRotation;
 
-                // Collider objCollider = t.gameObject.GetComponent<Collider>();
+                if(!IsCollidingAtPosition(boxCollider, newPosition, newRotation, t.gameObject.name)){
+                    t.position = newPosition;
+                }
 
-                // if (!IsCollidingAtPosition(objCollider, newPosition, newRotation, t.gameObject.name)){
-                //     t.position = oldPosition;
-                //     t.rotation = oldRotation;
-                // }
-                // else{
-                //     t.position = newPosition;
-                //     t.rotation = newRotation;
-                // }
             }
         }
     }
 
-    bool IsCollidingAtPosition(Collider objCollider, Vector3 position, Quaternion rotation, string name)
+    bool IsCollidingAtPosition(BoxCollider boxCollider, Vector3 position, Quaternion rotation, string name)
     {
-        BoxCollider boxCollider = objCollider as BoxCollider;
-        if (boxCollider != null)
+        Vector3 boxSize = Vector3.Scale(boxCollider.size, boxCollider.transform.lossyScale) / 2;
+        Collider[] hitColliders = Physics.OverlapBox(position, boxSize, rotation);
+
+        foreach (Collider hitCollider in hitColliders)
         {
-            Vector3 center = position + rotation * boxCollider.center;
-            Vector3 halfExtents = boxCollider.size / 2;
-
-            Collider[] hitColliders = Physics.OverlapBox(center, halfExtents, rotation, ~0, QueryTriggerInteraction.Ignore);
-
-            foreach (var hitCollider in hitColliders)
+            if (hitCollider != boxCollider && hitCollider.tag == "Boundary")
             {
-                if (hitCollider.CompareTag("Boundary"))
-                {
-                    Debug.Log(name + " Collided with boundary");
-                    return true;
-                }
+                return true;
             }
-            return false;
         }
-
         return false;
     }
 
