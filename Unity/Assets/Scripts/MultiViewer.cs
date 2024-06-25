@@ -144,7 +144,6 @@ public class MultiViewer : MonoBehaviour
             
             x = Mathf.Clamp(x, minX, maxX);
             
-            // Vector3 objectPosition = new Vector3(x, mainCamera.transform.position.y - 0.1f,  mainCamera.transform.position.z + 0.25f);
             Vector3 objectPosition = new Vector3(x, mainCamera.transform.position.y + 0.5f,  mainCamera.transform.position.z + 0.3f);
             g.transform.position = objectPosition;
 
@@ -208,9 +207,8 @@ public class MultiViewer : MonoBehaviour
 
                 BoxCollider boxCollider = t.gameObject.GetComponent<BoxCollider>();
 
-                t.rotation = newRotation;
-
                 if(!IsCollidingAtPosition(boxCollider, newPosition, newRotation, t.gameObject.name)){
+                    t.rotation = newRotation;
                     t.position = newPosition;
                 }
 
