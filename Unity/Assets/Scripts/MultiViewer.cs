@@ -124,6 +124,8 @@ public class MultiViewer : MonoBehaviour
 
             if(objScale != 0){
                 GameObject childObjects = g.transform.Find((g.name + "objects")).gameObject;
+
+                Debug.Log("SETTING OBJ SCALE FOR " + childObjects.name + objScale);
                 
                 childObjects.transform.localScale = new Vector3(objScale, objScale, objScale);
             }
@@ -151,20 +153,90 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
+    
+    //  public void placeChildObjects()
+    // {
+    //     GameObject parentLeftAnchor = parent.transform.Find("TopLeft").gameObject;
+    //     GameObject parentRightAnchor = parent.transform.Find("BottomRight").gameObject;
+
+    //     GameObject parentAvatar = parent.transform.Find("BottomRight").gameObject;
+
+    //     float parentWidth = parentRightAnchor.transform.position.x - parentLeftAnchor.transform.position.x;
+    //     float parentHeight = parentRightAnchor.transform.position.y - parentLeftAnchor.transform.position.y;
+    //     float parentDepth = parentRightAnchor.transform.position.z - Camera.main.transform.position.z; //Should be based on parent avatar, not camera. Smaller active region?
+
+    //     Dictionary<string, (Vector3, Quaternion)> parentObjectLocations = new Dictionary<string, (Vector3, Quaternion)>();
+
+    //     foreach (Transform obj in parentObjects.transform)
+    //     {
+    //         Vector3 distance = obj.position - parentLeftAnchor.transform.position;
+    //         Quaternion rotation = obj.rotation;
+
+    //         parentObjectLocations.Add(obj.name, (distance, rotation));
+    //     }
+
+    //     foreach (GameObject child in children)
+    //     {
+    //         GameObject childLeftAnchor = child.transform.Find("TopLeft").gameObject;
+    //         GameObject childRightAnchor = child.transform.Find("BottomRight").gameObject;
+
+    //         GameObject childAvatar = child.transform.Find("Avatar").gameObject;
+
+    //         float childWidth = childRightAnchor.transform.position.x - childLeftAnchor.transform.position.x;
+    //         float childHeight = childRightAnchor.transform.position.y - childLeftAnchor.transform.position.y;
+    //         float childDepth = childRightAnchor.transform.position.z - childAvatar.transform.position.z;
+
+    //         float widthScale = childWidth / parentWidth;
+    //         float heightScale = childHeight / parentHeight;
+    //         float depthScale = childDepth / parentDepth;
+
+    //         Transform childObjects = child.transform.Find((child.name + "objects"));
+    //         if(childObjects == null){
+    //             Debug.Log("Could not find for " + child.name);
+    //         }
+
+    //         foreach (Transform t in childObjects)
+    //         {
+    //             Object obj = t.gameObject.GetComponent<Object>();
+
+    //             var parentObject = parentObjectLocations[t.name.Replace(child.name, "")];
+    //             Vector3 distance = parentObject.Item1;
+            
+    //             Vector3 newPosition = new Vector3(
+    //                 childLeftAnchor.transform.position.x + distance.x * widthScale,
+    //                 childLeftAnchor.transform.position.y + distance.y * heightScale,
+    //                 childLeftAnchor.transform.position.z + distance.z * depthScale
+    //             );
+
+    //             Quaternion newRotation = parentObject.Item2;
+
+    //             BoxCollider boxCollider = t.gameObject.GetComponent<BoxCollider>();
+
+    //             if(!IsCollidingAtPosition(boxCollider, newPosition, newRotation, t.gameObject.name)){
+    //                 t.rotation = newRotation;
+    //                 t.position = newPosition;
+    //             }
+
+    //         }
+    //     }
+    // }
+
      public void placeChildObjects()
     {
         GameObject parentLeftAnchor = parent.transform.Find("TopLeft").gameObject;
         GameObject parentRightAnchor = parent.transform.Find("BottomRight").gameObject;
 
+        GameObject parentAvatar = parent.transform.Find("Avatar").gameObject;
+
         float parentWidth = parentRightAnchor.transform.position.x - parentLeftAnchor.transform.position.x;
         float parentHeight = parentRightAnchor.transform.position.y - parentLeftAnchor.transform.position.y;
-        float parentDepth = parentRightAnchor.transform.position.z - Camera.main.transform.position.z; //Should be based on parent avatar, not camera. Smaller active region?
+        float parentDepth = parentRightAnchor.transform.position.z - parentAvatar.transform.position.z; //Should be based on parent avatar, not camera. Smaller active region?
 
         Dictionary<string, (Vector3, Quaternion)> parentObjectLocations = new Dictionary<string, (Vector3, Quaternion)>();
 
         foreach (Transform obj in parentObjects.transform)
         {
-            Vector3 distance = obj.position - parentLeftAnchor.transform.position;
+            Vector3 distance = obj.position - parentAvatar.transform.position;
             Quaternion rotation = obj.rotation;
 
             parentObjectLocations.Add(obj.name, (distance, rotation));
@@ -185,6 +257,14 @@ public class MultiViewer : MonoBehaviour
             float heightScale = childHeight / parentHeight;
             float depthScale = childDepth / parentDepth;
 
+            float minX = childLeftAnchor.transform.position.x;
+            float maxX = childRightAnchor.transform.position.x;
+
+            float minY = childRightAnchor.transform.position.y;
+            float maxY = childLeftAnchor.transform.position.y;
+
+            float maxZ = childLeftAnchor.transform.position.z;
+
             Transform childObjects = child.transform.Find((child.name + "objects"));
             if(childObjects == null){
                 Debug.Log("Could not find for " + child.name);
@@ -196,11 +276,19 @@ public class MultiViewer : MonoBehaviour
 
                 var parentObject = parentObjectLocations[t.name.Replace(child.name, "")];
                 Vector3 distance = parentObject.Item1;
+
+                float xCoord = Mathf.Max(minX, childAvatar.transform.position.x + distance.x * widthScale);
+                xCoord = Mathf.Min(maxX, xCoord);
+
+                float yCoord = Mathf.Max(minY, childAvatar.transform.position.y + distance.y * heightScale);
+                yCoord = Mathf.Min(maxY, yCoord);
+
+                float zCoord = Mathf.Min(maxZ, childAvatar.transform.position.z + distance.z * depthScale);
             
                 Vector3 newPosition = new Vector3(
-                    childLeftAnchor.transform.position.x + distance.x * widthScale,
-                    childLeftAnchor.transform.position.y + distance.y * heightScale,
-                    childLeftAnchor.transform.position.z + distance.z * depthScale
+                    xCoord,
+                    yCoord,
+                    zCoord
                 );
 
                 Quaternion newRotation = parentObject.Item2;
@@ -262,7 +350,7 @@ public class MultiViewer : MonoBehaviour
 
     public void setSelectedGameObject(GameObject g){ 
         if (g != null){
-        Debug.Log("Selecting Child: " + g.name);
+        // Debug.Log("Selecting Child: " + g.name);
         }
         selectedGameObject = g;
     }
@@ -329,7 +417,8 @@ public class MultiViewer : MonoBehaviour
             obj.name = obj.name.Replace(parent.name, "");
         }
 
-        Camera.main.transform.position = new Vector3(0, 0, 0); 
+        Camera.main.transform.position = parent.transform.Find("Avatar").position;
+        Camera.main.transform.rotation = Quaternion.identity;
 
         placeChildren();
 
