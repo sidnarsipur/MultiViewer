@@ -6,7 +6,7 @@ public class Environment : MonoBehaviour
 {
 
     public float scale;
-    public float objScale;
+    public float objectScale;
     
     // Start is called before the first frame update
     void Start()

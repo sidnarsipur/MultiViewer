@@ -7,6 +7,7 @@ public class Object : MonoBehaviour
     MultiViewer m;
 
     private bool collided = false;
+    private Vector3 position;
 
     void Start(){
         GameObject multiViewerGameObject = GameObject.Find("MultiViewer");
@@ -27,6 +28,10 @@ public class Object : MonoBehaviour
 
     public bool getCollided(){
         return collided;
+    }
+
+    public void setPosition(Vector3 position){
+        this.position = position;
     }
 
     void OnCollisionEnter(Collision collision)

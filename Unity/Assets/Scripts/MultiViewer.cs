@@ -228,7 +228,7 @@ public class MultiViewer : MonoBehaviour
 
         GameObject parentAvatar = parent.transform.Find("Avatar").gameObject;
 
-        float parentWidth = parentRightAnchor.transform.position.x - parentLeftAnchor.transform.position.x;
+        float parentWidth;
         float parentHeight = parentRightAnchor.transform.position.y - parentLeftAnchor.transform.position.y;
         float parentDepth = parentRightAnchor.transform.position.z - parentAvatar.transform.position.z; //Should be based on parent avatar, not camera. Smaller active region?
 
@@ -249,11 +249,11 @@ public class MultiViewer : MonoBehaviour
 
             GameObject childAvatar = child.transform.Find("Avatar").gameObject;
 
-            float childWidth = childRightAnchor.transform.position.x - childLeftAnchor.transform.position.x;
+            float childWidth;
             float childHeight = childRightAnchor.transform.position.y - childLeftAnchor.transform.position.y;
             float childDepth = childRightAnchor.transform.position.z - childAvatar.transform.position.z;
 
-            float widthScale = childWidth / parentWidth;
+            float widthScale;
             float heightScale = childHeight / parentHeight;
             float depthScale = childDepth / parentDepth;
 
@@ -277,6 +277,17 @@ public class MultiViewer : MonoBehaviour
                 var parentObject = parentObjectLocations[t.name.Replace(child.name, "")];
                 Vector3 distance = parentObject.Item1;
 
+                if (distance.x > 0f){
+                    parentWidth = parentRightAnchor.transform.position.x - parentAvatar.transform.position.x;
+                    childWidth = childRightAnchor.transform.position.x - childAvatar.transform.position.x;
+                }
+                else{
+                    parentWidth = parentAvatar.transform.position.x - parentLeftAnchor.transform.position.x;
+                    childWidth = childAvatar.transform.position.x - childLeftAnchor.transform.position.x;
+                }
+
+                widthScale = childWidth / parentWidth;
+
                 float xCoord = Mathf.Max(minX, childAvatar.transform.position.x + distance.x * widthScale);
                 xCoord = Mathf.Min(maxX, xCoord);
 
@@ -284,6 +295,12 @@ public class MultiViewer : MonoBehaviour
                 yCoord = Mathf.Min(maxY, yCoord);
 
                 float zCoord = Mathf.Min(maxZ, childAvatar.transform.position.z + distance.z * depthScale);
+
+                setPosition(t.gameObject, new Vector3(
+                    childAvatar.transform.position.x + distance.x * widthScale, 
+                    childAvatar.transform.position.y + distance.y * heightScale, 
+                    childAvatar.transform.position.z + distance.z * depthScale
+                ));
             
                 Vector3 newPosition = new Vector3(
                     xCoord,
@@ -319,41 +336,6 @@ public class MultiViewer : MonoBehaviour
         return false;
     }
 
-    private float getScale(GameObject g){
-         Environment e = g.GetComponent<Environment>();
-
-          if (e != null)
-            {
-                return e.scale;
-            }
-            return 0;
-    }
-
-    private float getWidth(GameObject g){
-        GameObject leftAnchor = g.transform.Find("TopLeft").gameObject;
-        GameObject rightAnchor = g.transform.Find("BottomRight").gameObject;
-
-        return (rightAnchor.transform.position.x - leftAnchor.transform.position.x);
-    }
-
-    private GameObject getRightAnchor(GameObject g){
-        GameObject rightAnchor = g.transform.Find("BottomRight").gameObject;
-
-        return rightAnchor;
-    }
-
-    private float getObjectScale(GameObject g){
-         Environment e = g.GetComponent<Environment>();
-         
-         return e.objScale;
-    }
-
-    public void setSelectedGameObject(GameObject g){ 
-        if (g != null){
-        // Debug.Log("Selecting Child: " + g.name);
-        }
-        selectedGameObject = g;
-    }
 
     public void changeParent(GameObject newParent)
     {   
@@ -422,6 +404,50 @@ public class MultiViewer : MonoBehaviour
 
         placeChildren();
 
+    }
+
+    private float getScale(GameObject g){
+         Environment e = g.GetComponent<Environment>();
+
+          if (e != null)
+            {
+                return e.scale;
+            }
+            return 0;
+    }
+
+    private float getWidth(GameObject g){
+        GameObject leftAnchor = g.transform.Find("TopLeft").gameObject;
+        GameObject rightAnchor = g.transform.Find("BottomRight").gameObject;
+
+        return (rightAnchor.transform.position.x - leftAnchor.transform.position.x);
+    }
+
+    private GameObject getRightAnchor(GameObject g){
+        GameObject rightAnchor = g.transform.Find("BottomRight").gameObject;
+
+        return rightAnchor;
+    }
+
+    private float getObjectScale(GameObject g){
+         Environment e = g.GetComponent<Environment>();
+         
+         return e.objectScale;
+    }
+
+    private void setPosition(GameObject g, Vector3 position){
+        Object o = g.GetComponent<Object>();
+
+        if(o != null){
+            o.setPosition(position);
+        }
+    }
+
+    public void setSelectedGameObject(GameObject g){ 
+        if (g != null){
+        // Debug.Log("Selecting Child: " + g.name);
+        }
+        selectedGameObject = g;
     }
 
     public void disableInteraction(GameObject g)
