@@ -41,7 +41,6 @@ public class Object : MonoBehaviour
             Debug.Log(gameObject.name + " Boundary Collided with: " + collision.gameObject.name);
         }
     }
-
     
     void OnCollisionExit(Collision collision)
     {

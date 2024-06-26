@@ -5,15 +5,15 @@ using UnityEngine;
 public class MultiViewer : MonoBehaviour
 {
     [Header("MultiViewer")]                
-    public GameObject parent;
-    public List<GameObject> children;
+    public GameObject parent; //Parent environment
+    public List<GameObject> children; //List of children environments
 
-    private GameObject parentObjects;
-    private GameObject parentCopy;
+    private GameObject parentObjects; //Objects in the parent environment
+    private GameObject parentCopy; //Copy of the parent environment
 
-    private GameObject selectedGameObject = null;
+    private GameObject selectedGameObject = null; //Game object selected by user
    
-    private Dictionary<string, ObjectState> originalStates = new Dictionary<string, ObjectState>();
+    private Dictionary<string, ObjectState> originalStates = new Dictionary<string, ObjectState>(); //Original states of objects
 
     private class ObjectState
     {
@@ -29,6 +29,7 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
+    //Clears the environment by disabling all objects and enabling interactions
     public void clearEnv()
     {
         foreach (GameObject g in children)
@@ -49,7 +50,7 @@ public class MultiViewer : MonoBehaviour
 
         parent.SetActive(true);
 
-        parentObjects = this.transform.Find("objects").gameObject;
+        parentObjects = this.transform.Find("objects").gameObject; 
 
         parentCopy = Instantiate(parent);
         parentCopy.transform.parent = transform;
@@ -65,6 +66,7 @@ public class MultiViewer : MonoBehaviour
         foreach(Transform t in copy.transform){
             t.name = "parentCopy" + t.name;
         }
+
         Destroy(copy);
 
         disableInteraction(parent);
@@ -72,7 +74,6 @@ public class MultiViewer : MonoBehaviour
         parentObjects.transform.parent = parent.transform;
 
         children.Add(parentCopy);
-
 
         Debug.Log("Set Env Finished");
     }
@@ -93,6 +94,8 @@ public class MultiViewer : MonoBehaviour
     
     public void placeChildren()
     {
+        children.Sort((x, y) => string.Compare(x.name, y.name));
+
         GameObject parentLeftAnchor = parent.transform.Find("TopLeft").gameObject;
         GameObject parentRightAnchor = parent.transform.Find("BottomRight").gameObject;
         
@@ -124,8 +127,6 @@ public class MultiViewer : MonoBehaviour
 
             if(objScale != 0){
                 GameObject childObjects = g.transform.Find((g.name + "objects")).gameObject;
-
-                Debug.Log("SETTING OBJ SCALE FOR " + childObjects.name + objScale);
                 
                 childObjects.transform.localScale = new Vector3(objScale, objScale, objScale);
             }
@@ -230,7 +231,7 @@ public class MultiViewer : MonoBehaviour
 
         float parentWidth;
         float parentHeight = parentRightAnchor.transform.position.y - parentLeftAnchor.transform.position.y;
-        float parentDepth = parentRightAnchor.transform.position.z - parentAvatar.transform.position.z; //Should be based on parent avatar, not camera. Smaller active region?
+        float parentDepth = parentRightAnchor.transform.position.z - parentAvatar.transform.position.z; 
 
         Dictionary<string, (Vector3, Quaternion)> parentObjectLocations = new Dictionary<string, (Vector3, Quaternion)>();
 
@@ -267,7 +268,7 @@ public class MultiViewer : MonoBehaviour
 
             Transform childObjects = child.transform.Find((child.name + "objects"));
             if(childObjects == null){
-                Debug.Log("Could not find for " + child.name);
+                Debug.Log("Could not find objects for " + child.name);
             }
 
             foreach (Transform t in childObjects)
@@ -340,6 +341,7 @@ public class MultiViewer : MonoBehaviour
     public void changeParent(GameObject newParent)
     {   
         if(string.Equals(newParent.name, "parentCopy")){
+            Debug.Log("Environment is already the parent.");
             return;
         }
 
@@ -416,6 +418,12 @@ public class MultiViewer : MonoBehaviour
             return 0;
     }
 
+    private float getObjectScale(GameObject g){
+         Environment e = g.GetComponent<Environment>();
+         
+         return e.objectScale;
+    }
+
     private float getWidth(GameObject g){
         GameObject leftAnchor = g.transform.Find("TopLeft").gameObject;
         GameObject rightAnchor = g.transform.Find("BottomRight").gameObject;
@@ -429,12 +437,6 @@ public class MultiViewer : MonoBehaviour
         return rightAnchor;
     }
 
-    private float getObjectScale(GameObject g){
-         Environment e = g.GetComponent<Environment>();
-         
-         return e.objectScale;
-    }
-
     private void setPosition(GameObject g, Vector3 position){
         Object o = g.GetComponent<Object>();
 
@@ -445,7 +447,7 @@ public class MultiViewer : MonoBehaviour
 
     public void setSelectedGameObject(GameObject g){ 
         if (g != null){
-        // Debug.Log("Selecting Child: " + g.name);
+            Debug.Log("Selecting: " + g.name);
         }
         selectedGameObject = g;
     }
@@ -454,14 +456,12 @@ public class MultiViewer : MonoBehaviour
     {
         GameObject RayGrabInteraction = g.transform.Find("ISDK_RayGrabInteraction").gameObject;
         RayGrabInteraction?.SetActive(false);
-
     }
 
     public void enableInteraction(GameObject g)
      {
         GameObject RayGrabInteraction = g.transform.Find("ISDK_RayGrabInteraction").gameObject;
         RayGrabInteraction?.SetActive(true);
-
     }
     
     private void StoreOriginalState(GameObject obj) 
@@ -502,7 +502,6 @@ public class MultiViewer : MonoBehaviour
             Vector3 cameraDir = (camera.transform.position - g.transform.position).normalized;
 
             float moveStep = 0.4f;
-            // Vector3 newPosition = g.transform.position + cameraDir * moveStep;
 
             if(dir){
                 rb.MovePosition(g.transform.position + cameraDir * -moveStep);
@@ -514,7 +513,6 @@ public class MultiViewer : MonoBehaviour
             enableInteraction(g);
         }
     }
-
 
     // Start is called before the first frame update
     void Start()
