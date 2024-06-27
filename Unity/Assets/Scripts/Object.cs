@@ -7,11 +7,15 @@ public class Object : MonoBehaviour
     MultiViewer m;
 
     private bool collided = false;
-    private Vector3 position;
+
+    // [HideInInspector]
+    public float scale;
 
     void Start(){
         GameObject multiViewerGameObject = GameObject.Find("MultiViewer");
         m = multiViewerGameObject.GetComponent<MultiViewer>();
+
+        scale = this.transform.localScale.x;
     }
 
     public void selectChild(GameObject g){
@@ -28,10 +32,6 @@ public class Object : MonoBehaviour
 
     public bool getCollided(){
         return collided;
-    }
-
-    public void setPosition(Vector3 position){
-        this.position = position;
     }
 
     void OnCollisionEnter(Collision collision)
