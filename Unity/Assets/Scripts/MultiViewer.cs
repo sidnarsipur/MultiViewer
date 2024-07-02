@@ -33,7 +33,8 @@ public class MultiViewer : MonoBehaviour
     //Clears the environment by disabling all objects and enabling interactions
     public void clearEnv()
     {
-        foreach (GameObject g in children)
+
+        foreach(GameObject g in children)
         {
             g.SetActive(false);
             enableInteraction(g);
@@ -48,6 +49,15 @@ public class MultiViewer : MonoBehaviour
     public void setEnv()
     {
         clearEnv(); 
+
+        Environment e = parent.GetComponent<Environment>();
+        e.id = 0;
+
+        for(int i = 0; i < children.Count; i++)
+        {
+            Environment childEnv = children[i].GetComponent<Environment>();
+            childEnv.id = i + 1;
+        }
 
         parent.SetActive(true);
 
@@ -99,10 +109,12 @@ public class MultiViewer : MonoBehaviour
     
     public void placeChildren()
     {
-        children.Sort((x, y) => string.Compare(x.name, y.name));
+        children.Sort((x, y) => string.Compare(getID(x).ToString(), getID(y).ToString()));
 
         GameObject parentLeftAnchor = parent.transform.Find("TopLeft").gameObject;
         GameObject parentRightAnchor = parent.transform.Find("BottomRight").gameObject;
+
+        GameObject heightAnchor = parent.transform.Find("Height").gameObject;
         
         float minX = parentLeftAnchor.transform.position.x + 0.25f;
         float maxX = parentRightAnchor.transform.position.x;
@@ -127,14 +139,6 @@ public class MultiViewer : MonoBehaviour
             float scale = getScale(g);
             g.transform.localScale = new Vector3(scale, scale, scale);
 
-            float objScale = getenvObjectScale(g);
-
-            if(objScale != 0){
-                GameObject childObjects = g.transform.Find((g.name + "objects")).gameObject;
-                
-                childObjects.transform.localScale = new Vector3(objScale, objScale, objScale);
-            }
-
             float angle = startAngle + angleStep * i;
 
             float prevChildWidth;
@@ -151,80 +155,12 @@ public class MultiViewer : MonoBehaviour
             
             x = Mathf.Clamp(x, minX, maxX);
             
-            Vector3 objectPosition = new Vector3(x, centerY - 0.2f,  parentAvatarPosition.z + 0.4f);
+            Vector3 objectPosition = new Vector3(x, heightAnchor.transform.position.y,  parentAvatarPosition.z + 0.3f);
             g.transform.position = objectPosition;
 
             prevX = getRightAnchor(g).transform.position.x;
         }
     }
-
-    
-    //  public void placeChildObjects()
-    // {
-    //     GameObject parentLeftAnchor = parent.transform.Find("TopLeft").gameObject;
-    //     GameObject parentRightAnchor = parent.transform.Find("BottomRight").gameObject;
-
-    //     GameObject parentAvatar = parent.transform.Find("BottomRight").gameObject;
-
-    //     float parentWidth = parentRightAnchor.transform.position.x - parentLeftAnchor.transform.position.x;
-    //     float parentHeight = parentRightAnchor.transform.position.y - parentLeftAnchor.transform.position.y;
-    //     float parentDepth = parentRightAnchor.transform.position.z - Camera.main.transform.position.z; //Should be based on parent avatar, not camera. Smaller active region?
-
-    //     Dictionary<string, (Vector3, Quaternion)> parentObjectLocations = new Dictionary<string, (Vector3, Quaternion)>();
-
-    //     foreach (Transform obj in parentObjects.transform)
-    //     {
-    //         Vector3 distance = obj.position - parentLeftAnchor.transform.position;
-    //         Quaternion rotation = obj.rotation;
-
-    //         parentObjectLocations.Add(obj.name, (distance, rotation));
-    //     }
-
-    //     foreach (GameObject child in children)
-    //     {
-    //         GameObject childLeftAnchor = child.transform.Find("TopLeft").gameObject;
-    //         GameObject childRightAnchor = child.transform.Find("BottomRight").gameObject;
-
-    //         GameObject childAvatar = child.transform.Find("Avatar").gameObject;
-
-    //         float childWidth = childRightAnchor.transform.position.x - childLeftAnchor.transform.position.x;
-    //         float childHeight = childRightAnchor.transform.position.y - childLeftAnchor.transform.position.y;
-    //         float childDepth = childRightAnchor.transform.position.z - childAvatar.transform.position.z;
-
-    //         float widthScale = childWidth / parentWidth;
-    //         float heightScale = childHeight / parentHeight;
-    //         float depthScale = childDepth / parentDepth;
-
-    //         Transform childObjects = child.transform.Find((child.name + "objects"));
-    //         if(childObjects == null){
-    //             Debug.Log("Could not find for " + child.name);
-    //         }
-
-    //         foreach (Transform t in childObjects)
-    //         {
-    //             Object obj = t.gameObject.GetComponent<Object>();
-
-    //             var parentObject = parentObjectLocations[t.name.Replace(child.name, "")];
-    //             Vector3 distance = parentObject.Item1;
-            
-    //             Vector3 newPosition = new Vector3(
-    //                 childLeftAnchor.transform.position.x + distance.x * widthScale,
-    //                 childLeftAnchor.transform.position.y + distance.y * heightScale,
-    //                 childLeftAnchor.transform.position.z + distance.z * depthScale
-    //             );
-
-    //             Quaternion newRotation = parentObject.Item2;
-
-    //             BoxCollider boxCollider = t.gameObject.GetComponent<BoxCollider>();
-
-    //             if(!IsCollidingAtPosition(boxCollider, newPosition, newRotation, t.gameObject.name)){
-    //                 t.rotation = newRotation;
-    //                 t.position = newPosition;
-    //             }
-
-    //         }
-    //     }
-    // }
 
      public void placeChildObjects()
     {
@@ -293,14 +229,6 @@ public class MultiViewer : MonoBehaviour
 
                 widthScale = childWidth / parentWidth;
 
-                // float xCoord = Mathf.Max(minX, childAvatar.transform.position.x + distance.x * widthScale);
-                // xCoord = Mathf.Min(maxX, xCoord);
-
-                // float yCoord = Mathf.Max(minY, childAvatar.transform.position.y + distance.y * heightScale);
-                // yCoord = Mathf.Min(maxY, yCoord);
-
-                // float zCoord = Mathf.Min(maxZ, childAvatar.transform.position.z + distance.z * depthScale);
-
                 float xCoord = childAvatar.transform.position.x + distance.x * widthScale;
                 float yCoord = childAvatar.transform.position.y + distance.y * heightScale;
                 float zCoord = childAvatar.transform.position.z + distance.z * depthScale;
@@ -318,9 +246,6 @@ public class MultiViewer : MonoBehaviour
                 float objScale = getObjectScale(t.gameObject);
 
                 t.rotation = newRotation;
-                
-                // t.localScale = new Vector3(obj.scale, obj.scale, obj.scale);
-                // Debug.Log("scale to " + objScale);
 
                 if(!IsCollidingAtPosition(boxCollider, newPosition, newRotation, t.gameObject.name)){
                     t.position = newPosition;
@@ -400,6 +325,10 @@ public class MultiViewer : MonoBehaviour
         parent = newParent;
 
         parentAvatar = parent.transform.Find("Avatar").gameObject;
+
+        Camera.main.transform.position = parentAvatar.transform.position;
+        Camera.main.transform.rotation = Quaternion.identity;
+
         parentAvatar.SetActive(false);
 
         parentObjects = parent.transform.Find((parent.name + "objects")).gameObject;
@@ -408,9 +337,6 @@ public class MultiViewer : MonoBehaviour
         foreach(Transform obj in parentObjects.transform){
             obj.name = obj.name.Replace(parent.name, "");
         }
-
-        Camera.main.transform.position = parent.transform.Find("Avatar").position;
-        Camera.main.transform.rotation = Quaternion.identity;
 
         placeChildren();
 
@@ -426,10 +352,10 @@ public class MultiViewer : MonoBehaviour
             return 0;
     }
 
-    private float getenvObjectScale(GameObject g){
+    private int getID(GameObject g){
         Environment e = g.GetComponent<Environment>();
 
-        return e.envObjectScale;
+        return e.id;
     }
 
     private float getObjectScale(GameObject g){
@@ -437,13 +363,6 @@ public class MultiViewer : MonoBehaviour
 
         return o.scale;
     }
-
-    // private void setObjectScale(GameObject g, float scale){
-    //     Object o = g.GetComponent<Object>();
-
-    //     o.scale = scale;
-    //     Debug.Log("SETTING scale to " + o.scale);
-    // }
 
     private float getWidth(GameObject g){
         GameObject leftAnchor = g.transform.Find("TopLeft").gameObject;
@@ -533,28 +452,6 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
-    // private void scaleObject(bool dir){
-    //     if(selectedGameObject != null){
-    //         GameObject g = selectedGameObject;
-        
-    //         disableInteraction(g);
-            
-    //         float scaleStep = 1f;
-
-    //         Debug.Log("Local Scale of object: " + g.transform.localScale.x);
-
-    //         if(dir){
-    //             g.transform.localScale += new Vector3(scaleStep, scaleStep, scaleStep);
-    //         }
-    //         else{
-    //             g.transform.localScale -= new Vector3(scaleStep, scaleStep, scaleStep);
-    //         }
-
-    //         setObjectScale(g, g.transform.localScale.x);
-    //         enableInteraction(g);
-    //     }
-    // }
-
     // Start is called before the first frame update
     void Start()
     {
@@ -577,18 +474,6 @@ public class MultiViewer : MonoBehaviour
                 changeParent(selectedGameObject);
             }
         }
-
-        // if(OVRInput.Get(OVRInput.RawButton.B)){
-        //     if(selectedGameObject != null){
-        //         scaleObject(true);
-        //     }
-        // }
-
-        // if(OVRInput.Get(OVRInput.RawButton.A)){
-        //     if(selectedGameObject != null){
-        //         scaleObject(false);
-        //     }
-        // }
 
         if(OVRInput.Get(OVRInput.RawButton.LThumbstickUp) || OVRInput.Get(OVRInput.RawButton.RThumbstickUp)){
             moveObject(true);

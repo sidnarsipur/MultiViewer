@@ -7,6 +7,9 @@ public class Environment : MonoBehaviour
 
     public float scale;
     public float envObjectScale;
+
+    [HideInInspector]
+    public int id;
     
     // Start is called before the first frame update
     void Start()
