@@ -116,7 +116,7 @@ public class MultiViewer : MonoBehaviour
 
         GameObject heightAnchor = parent.transform.Find("Height").gameObject;
         
-        float minX = parentLeftAnchor.transform.position.x + 0.25f;
+        float minX = parentLeftAnchor.transform.position.x;
         float maxX = parentRightAnchor.transform.position.x;
         float width = maxX - minX;
         
@@ -155,7 +155,7 @@ public class MultiViewer : MonoBehaviour
             
             x = Mathf.Clamp(x, minX, maxX);
             
-            Vector3 objectPosition = new Vector3(x, heightAnchor.transform.position.y,  parentAvatarPosition.z + 0.3f);
+            Vector3 objectPosition = new Vector3(x, heightAnchor.transform.position.y,  parentAvatarPosition.z + 0.4f);
             g.transform.position = objectPosition;
 
             prevX = getRightAnchor(g).transform.position.x;
@@ -177,7 +177,13 @@ public class MultiViewer : MonoBehaviour
 
         foreach (Transform obj in parentObjects.transform)
         {
-            Vector3 distance = obj.position - parentAvatar.transform.position;
+            // Vector3 distance = obj.position - parentAvatar.transform.position;
+            Vector3 distance = new Vector3(
+                obj.position.x - parentAvatar.transform.position.x,
+                obj.position.y - parentAvatar.transform.position.y,
+                obj.position.z - parentAvatar.transform.position.z
+            );
+
             Quaternion rotation = obj.rotation;
 
             parentObjectLocations.Add(obj.name, (distance, rotation));
@@ -229,8 +235,8 @@ public class MultiViewer : MonoBehaviour
 
                 widthScale = childWidth / parentWidth;
 
-                float xCoord = childAvatar.transform.position.x + distance.x * widthScale;
-                float yCoord = childAvatar.transform.position.y + distance.y * heightScale;
+                float xCoord = Mathf.Min(childAvatar.transform.position.x + distance.x * widthScale, maxX);
+                float yCoord = Mathf.Min(childAvatar.transform.position.y + distance.y * heightScale, maxY);
                 float zCoord = childAvatar.transform.position.z + distance.z * depthScale;
             
                 Vector3 newPosition = new Vector3(

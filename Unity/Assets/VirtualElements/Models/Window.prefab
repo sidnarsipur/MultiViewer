@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6793245092841813594}
   - component: {fileID: 5058311062491013597}
   - component: {fileID: 1638298698137629143}
-  - component: {fileID: 3585934990479178099}
   m_Layer: 0
   m_Name: window
   m_TagString: Untagged
@@ -84,28 +83,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &3585934990479178099
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1298286726002133438}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &1941463672754839707
 GameObject:
   m_ObjectHideFlags: 0
@@ -115,7 +92,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4274247969071121732}
-  - component: {fileID: 521666875139153614}
   m_Layer: 0
   m_Name: Window
   m_TagString: Untagged
@@ -140,19 +116,6 @@ Transform:
   - {fileID: 6793245092841813594}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &521666875139153614
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1941463672754839707}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc96adcea3a9c0544887b8f57efee24c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  scale: 0
 --- !u!1 &6321942768198589287
 GameObject:
   m_ObjectHideFlags: 0
