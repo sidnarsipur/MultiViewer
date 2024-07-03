@@ -38,7 +38,7 @@ public class Object : MonoBehaviour
     {
         if(collision.gameObject.tag == "Boundary"){
             setCollided(true);
-            Debug.Log(gameObject.name + " Boundary Collided with: " + collision.gameObject.name);
+            Debug.Log(gameObject.name + " Collided with: " + collision.gameObject.name);
         }
     }
     
@@ -46,7 +46,7 @@ public class Object : MonoBehaviour
     {
         if(collision.gameObject.tag == "Boundary"){
             setCollided(false);
-            Debug.Log(gameObject.name + " EXITED Collided with: " + collision.gameObject.name);
+            Debug.Log(gameObject.name + " Exited From: " + collision.gameObject.name);
         }
     }
 

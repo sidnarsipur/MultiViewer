@@ -57,8 +57,6 @@ public class MultiViewer : MonoBehaviour
         {
             Environment childEnv = children[i].GetComponent<Environment>();
             childEnv.id = i + 1;
-
-            children[i].transform.Find("Wall")?.gameObject.SetActive(false);
         }
 
         parent.SetActive(true);
@@ -142,6 +140,8 @@ public class MultiViewer : MonoBehaviour
             
             float scale = getScale(g);
             g.transform.localScale = new Vector3(scale, scale, scale);
+
+            children[i].transform.Find("Wall")?.gameObject.SetActive(false);
 
             float angle = startAngle + angleStep * i;
 
