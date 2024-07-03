@@ -155,7 +155,7 @@ public class MultiViewer : MonoBehaviour
             
             x = Mathf.Clamp(x, minX, maxX);
             
-            Vector3 objectPosition = new Vector3(x, heightAnchor.transform.position.y,  parentAvatarPosition.z + 0.4f);
+            Vector3 objectPosition = new Vector3(x, heightAnchor.transform.position.y,  parentAvatarPosition.z + 0.3f);
             g.transform.position = objectPosition;
 
             prevX = getRightAnchor(g).transform.position.x;
@@ -237,7 +237,7 @@ public class MultiViewer : MonoBehaviour
 
                 float xCoord = Mathf.Min(childAvatar.transform.position.x + distance.x * widthScale, maxX);
                 float yCoord = Mathf.Min(childAvatar.transform.position.y + distance.y * heightScale, maxY);
-                float zCoord = childAvatar.transform.position.z + distance.z * depthScale;
+                float zCoord = Mathf.Min(childAvatar.transform.position.z + distance.z * depthScale, maxZ);
             
                 Vector3 newPosition = new Vector3(
                     xCoord,
