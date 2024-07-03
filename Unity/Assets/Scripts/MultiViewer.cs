@@ -57,9 +57,13 @@ public class MultiViewer : MonoBehaviour
         {
             Environment childEnv = children[i].GetComponent<Environment>();
             childEnv.id = i + 1;
+
+            children[i].transform.Find("Wall")?.gameObject.SetActive(false);
         }
 
         parent.SetActive(true);
+
+        parent.transform.Find("Wall")?.gameObject.SetActive(true);
 
         parentObjects = this.transform.Find("objects").gameObject; 
 
@@ -155,7 +159,7 @@ public class MultiViewer : MonoBehaviour
             
             x = Mathf.Clamp(x, minX, maxX);
             
-            Vector3 objectPosition = new Vector3(x, heightAnchor.transform.position.y,  parentAvatarPosition.z + 0.3f);
+            Vector3 objectPosition = new Vector3(x, heightAnchor.transform.position.y,  parentAvatarPosition.z + 0.2f);
             g.transform.position = objectPosition;
 
             prevX = getRightAnchor(g).transform.position.x;
