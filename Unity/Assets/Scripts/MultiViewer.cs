@@ -16,6 +16,8 @@ public class MultiViewer : MonoBehaviour
    
     private Dictionary<string, ObjectState> originalStates = new Dictionary<string, ObjectState>(); //Original states of objects
 
+    private Logger logger;
+
     private class ObjectState
     {
         public Vector3 position;
@@ -33,6 +35,7 @@ public class MultiViewer : MonoBehaviour
     //Clears the environment by disabling all objects and enabling interactions
     public void clearEnv()
     {
+        logger.log("General", "CLEARING ENVIRONMENT - ACTION CLEARENV");
 
         foreach(GameObject g in children)
         {
@@ -50,11 +53,17 @@ public class MultiViewer : MonoBehaviour
     {
         clearEnv(); 
 
+        logger.log("General", "SETTING ENVIRONMENT - ACTION SETENV");
+
+        logger.log("MultiViewer", "SETTING PARENT - " + parent.name + " - ACTION SETENV");
+
         Environment e = parent.GetComponent<Environment>();
         e.id = 0;
 
         for(int i = 0; i < children.Count; i++)
         {
+            logger.log("MultiViewer", "ADDING CHILD - " + children[i].name + " - ACTION SETENV");
+
             Environment childEnv = children[i].GetComponent<Environment>();
             childEnv.id = i + 1;
         }
@@ -179,6 +188,9 @@ public class MultiViewer : MonoBehaviour
 
         foreach (Transform obj in parentObjects.transform)
         {
+
+            logger.log("Objects", obj.name + " is  at " + obj.position + " - ACTION PLACECHILDOBJECTS");
+
             Vector3 distance = new Vector3(
                 obj.position.x - parentAvatar.transform.position.x,
                 obj.position.y - parentRightAnchor.transform.position.y,
@@ -193,7 +205,7 @@ public class MultiViewer : MonoBehaviour
         foreach (GameObject child in children)
         {
 
-            Debug.Log("Placing objects for " + child.name);
+            // Debug.Log("Placing objects for " + child.name);
 
             GameObject childLeftAnchor = child.transform.Find("TopLeft").gameObject;
             GameObject childRightAnchor = child.transform.Find("BottomRight").gameObject;
@@ -283,6 +295,10 @@ public class MultiViewer : MonoBehaviour
 
     public void changeParent(GameObject newParent)
     {   
+        Debug.Log("Changing parent to " + newParent.name);
+
+        logger.log("MultiViewer", "SETTING PARENT - " + newParent.name + " - ACTION CHANGEPARENT");
+
         if(string.Equals(newParent.name, "parentCopy")){
             Debug.Log("Environment is already the parent.");
             return;
@@ -351,6 +367,8 @@ public class MultiViewer : MonoBehaviour
 
         placeChildren();
 
+        selectedGameObject = null;
+
     }
 
     private float getScale(GameObject g){
@@ -391,8 +409,10 @@ public class MultiViewer : MonoBehaviour
     public void setSelectedGameObject(GameObject g){ 
         if (g != null){
             Debug.Log("Selecting: " + g.name);
+            logger.log("MultiViewer", "SELECTED OBJECT - " + g.name + " - ACTION SETSELECTEDOBJECT");
+
+            selectedGameObject = g;
         }
-        selectedGameObject = g;
     }
 
     public void disableInteraction(GameObject g)
@@ -437,6 +457,8 @@ public class MultiViewer : MonoBehaviour
             obj.transform.position = state.position;
             obj.transform.rotation = state.rotation;
             obj.transform.localScale = state.scale;
+
+            logger.log("Objects", "NEW POSITION - " + obj.name + " moved to " + obj.transform.position + " - ACTION RESETOBJECTSTATE");
         }
         else{
             Debug.Log("Object original state not found");
@@ -463,6 +485,8 @@ public class MultiViewer : MonoBehaviour
             }
 
             enableInteraction(g);
+
+            logger.log("Objects", "NEW POSITION - " + g.name + " moved to " + g.transform.position + " - ACTION MOVEOBJECT");
         }
         else{
             Debug.Log("No object selected");
@@ -472,6 +496,12 @@ public class MultiViewer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        logger = new Logger();
+
+        logger.createLog("General");
+        logger.createLog("Objects");
+        logger.createLog("MultiViewer");
+        
         StoreOriginalState(parent);
         
         foreach(GameObject child in children){
@@ -484,14 +514,16 @@ public class MultiViewer : MonoBehaviour
 
         foreach(Transform t in parentObjects.transform){
             StoreOriginalState(t.gameObject);
-        }         
+        }   
     }
 
     // Update is called once per frame
     void Update()
     {
         if(OVRInput.Get(OVRInput.RawButton.X)){
-            changeParent(selectedGameObject);
+            if(selectedGameObject != null){
+                changeParent(selectedGameObject);
+            }
         }
 
         if(OVRInput.Get(OVRInput.RawButton.B)){
@@ -509,5 +541,10 @@ public class MultiViewer : MonoBehaviour
         }
 
         placeChildObjects();
+    }
+
+    void OnApplicationQuit()
+    {
+        logger.log("General", "APPLICATION QUIT - ACTION APPLICATIONQUIT");
     }
 }
