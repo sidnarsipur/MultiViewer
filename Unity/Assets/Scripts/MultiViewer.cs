@@ -61,8 +61,6 @@ public class MultiViewer : MonoBehaviour
 
         parent.SetActive(true);
 
-        parent.transform.Find("Wall")?.gameObject.SetActive(true);
-
         parentObjects = this.transform.Find("objects").gameObject; 
 
         parentCopy = Instantiate(parent);
@@ -148,7 +146,7 @@ public class MultiViewer : MonoBehaviour
             float prevChildWidth;
             
             if(i != 0){
-                prevChildWidth = getWidth(children[i-1]);
+                prevChildWidth = getWidth(children[i-1]) + 0.1f;
             }
             else{
                 prevChildWidth = 0;
@@ -159,7 +157,7 @@ public class MultiViewer : MonoBehaviour
             
             x = Mathf.Clamp(x, minX, maxX);
             
-            Vector3 objectPosition = new Vector3(x, heightAnchor.transform.position.y,  parentAvatarPosition.z + 0.2f);
+            Vector3 objectPosition = new Vector3(x, heightAnchor.transform.position.y,  parentAvatarPosition.z + 0.3f);
             g.transform.position = objectPosition;
 
             prevX = getRightAnchor(g).transform.position.x;
@@ -175,16 +173,15 @@ public class MultiViewer : MonoBehaviour
 
         float parentWidth;
         float parentHeight = parentLeftAnchor.transform.position.y - parentAvatar.transform.position.y;
-        float parentDepth = parentRightAnchor.transform.position.z - parentAvatar.transform.position.z; 
+        float parentDepth = parentLeftAnchor.transform.position.z - parentAvatar.transform.position.z; 
 
         Dictionary<string, (Vector3, Quaternion)> parentObjectLocations = new Dictionary<string, (Vector3, Quaternion)>();
 
         foreach (Transform obj in parentObjects.transform)
         {
-            // Vector3 distance = obj.position - parentAvatar.transform.position;
             Vector3 distance = new Vector3(
                 obj.position.x - parentAvatar.transform.position.x,
-                obj.position.y - parentAvatar.transform.position.y,
+                obj.position.y - parentRightAnchor.transform.position.y,
                 obj.position.z - parentAvatar.transform.position.z
             );
 
@@ -195,6 +192,9 @@ public class MultiViewer : MonoBehaviour
 
         foreach (GameObject child in children)
         {
+
+            Debug.Log("Placing objects for " + child.name);
+
             GameObject childLeftAnchor = child.transform.Find("TopLeft").gameObject;
             GameObject childRightAnchor = child.transform.Find("BottomRight").gameObject;
 
@@ -202,7 +202,7 @@ public class MultiViewer : MonoBehaviour
 
             float childWidth;
             float childHeight = childLeftAnchor.transform.position.y - childAvatar.transform.position.y;
-            float childDepth = childRightAnchor.transform.position.z - childAvatar.transform.position.z;
+            float childDepth = childLeftAnchor.transform.position.z - childAvatar.transform.position.z;
 
             float widthScale;
             float heightScale = childHeight / parentHeight;
@@ -240,7 +240,7 @@ public class MultiViewer : MonoBehaviour
                 widthScale = childWidth / parentWidth;
 
                 float xCoord = Mathf.Min(childAvatar.transform.position.x + distance.x * widthScale, maxX);
-                float yCoord = Mathf.Min(childAvatar.transform.position.y + distance.y * heightScale, maxY);
+                float yCoord = Mathf.Min(childRightAnchor.transform.position.y + distance.y * heightScale, maxY);
                 float zCoord = Mathf.Min(childAvatar.transform.position.z + distance.z * depthScale, maxZ);
             
                 Vector3 newPosition = new Vector3(
@@ -335,6 +335,7 @@ public class MultiViewer : MonoBehaviour
         parent = newParent;
 
         parentAvatar = parent.transform.Find("Avatar").gameObject;
+        parent.transform.Find("Wall")?.gameObject.SetActive(true);
 
         Camera.main.transform.position = parentAvatar.transform.position;
         Camera.main.transform.rotation = Quaternion.identity;
@@ -422,6 +423,9 @@ public class MultiViewer : MonoBehaviour
         
             originalStates.Add(obj.name, new ObjectState(originalPosition, originalRotation, originalScale));
         }
+        else{
+            Debug.Log("Object original state already stored");
+        }
     }
     
     private void ResetObjectState(GameObject obj)
@@ -435,7 +439,7 @@ public class MultiViewer : MonoBehaviour
             obj.transform.localScale = state.scale;
         }
         else{
-            Debug.Log("Object not found in original states");
+            Debug.Log("Object original state not found");
         }
     }
 
@@ -449,7 +453,7 @@ public class MultiViewer : MonoBehaviour
             Camera camera = Camera.main;
             Vector3 cameraDir = (camera.transform.position - g.transform.position).normalized;
 
-            float moveStep = 0.4f;
+            float moveStep = 0.03f;
 
             if(dir){
                 rb.MovePosition(g.transform.position + cameraDir * -moveStep);
@@ -459,6 +463,9 @@ public class MultiViewer : MonoBehaviour
             }
 
             enableInteraction(g);
+        }
+        else{
+            Debug.Log("No object selected");
         }
     }
 
@@ -473,15 +480,23 @@ public class MultiViewer : MonoBehaviour
 
         setEnv();
         createChildObjects();
-        placeChildren();            
+        placeChildren();   
+
+        foreach(Transform t in parentObjects.transform){
+            StoreOriginalState(t.gameObject);
+        }         
     }
 
     // Update is called once per frame
     void Update()
     {
         if(OVRInput.Get(OVRInput.RawButton.X)){
-            if(selectedGameObject != null){
-                changeParent(selectedGameObject);
+            changeParent(selectedGameObject);
+        }
+
+        if(OVRInput.Get(OVRInput.RawButton.B)){
+            foreach(Transform t in parentObjects.transform){
+                ResetObjectState(t.gameObject);
             }
         }
 
