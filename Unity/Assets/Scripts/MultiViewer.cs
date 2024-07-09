@@ -500,6 +500,7 @@ public class MultiViewer : MonoBehaviour
 
         logger.createLog("Objects");
         logger.createLog("MultiViewer");
+        logger.createLog("Controller");
 
         logger.log("MultiViewer", "Starting MultiViewer - START");
         
@@ -522,30 +523,44 @@ public class MultiViewer : MonoBehaviour
     void Update()
     {
         if(OVRInput.Get(OVRInput.RawButton.X)){
+            logger.log("Controller", "X Button");
             if(selectedGameObject != null){
                 changeParent(selectedGameObject);
             }
         }
 
         if(OVRInput.Get(OVRInput.RawButton.B)){
+            logger.log("Controller", "B Button");
+            logger.log("MultiViewer", "Resetting Objects - RESETENV");
             foreach(Transform t in parentObjects.transform){
                 ResetObjectState(t.gameObject);
             }
         }
 
         if(OVRInput.Get(OVRInput.RawButton.LThumbstickUp) || OVRInput.Get(OVRInput.RawButton.RThumbstickUp)){
+            logger.log("Controller", "Thumbstick Up");
             moveObject(true);
         }
 
         if(OVRInput.Get(OVRInput.RawButton.LThumbstickDown) || OVRInput.Get(OVRInput.RawButton.RThumbstickDown)){
+            logger.log("Controller", "Thumbstick Down");
             moveObject(false);
         }
 
         placeChildObjects();
+
+        Vector3 leftControllerPosition = OVRInput.GetLocalControllerPosition(OVRInput.Controller.LTouch);
+        Quaternion leftControllerRotation = OVRInput.GetLocalControllerRotation(OVRInput.Controller.LTouch);
+
+        Vector3 rightControllerPosition = OVRInput.GetLocalControllerPosition(OVRInput.Controller.RTouch);
+        Quaternion rightControllerRotation = OVRInput.GetLocalControllerRotation(OVRInput.Controller.RTouch);
+
+        logger.log("Controller", "Controller Position is (" + leftControllerPosition + " " + rightControllerPosition + ") - UPDATE");
+        logger.log("Controller", "Controller Rotation is (" + leftControllerRotation + " " + rightControllerRotation + ") - UPDATE");
     }
 
     void OnApplicationQuit()
     {
-        logger.log("General", "Quitting MultiViewer - APPLICATIONQUIT");
+        logger.log("MultiViewer", "Quitting MultiViewer - APPLICATIONQUIT");
     }
 }

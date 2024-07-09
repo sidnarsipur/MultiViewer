@@ -67,7 +67,6 @@
   <ItemGroup>
     <None Include="Assets\Logs\Objects.txt" />
     <None Include="Assets\Logs\MultiViewer.txt" />
-    <None Include="Assets\Logs\General.txt" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
