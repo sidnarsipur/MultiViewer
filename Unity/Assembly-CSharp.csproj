@@ -65,6 +65,7 @@
     <Compile Include="Assets\Scripts\Environment.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Logs\Controller.txt" />
     <None Include="Assets\Logs\Objects.txt" />
     <None Include="Assets\Logs\MultiViewer.txt" />
   </ItemGroup>

@@ -16,6 +16,8 @@ public class MultiViewer : MonoBehaviour
    
     private Dictionary<string, ObjectState> originalStates = new Dictionary<string, ObjectState>(); //Original states of objects
 
+    float initObjectDistance;
+
     private Logger logger;
 
     private class ObjectState
@@ -71,6 +73,8 @@ public class MultiViewer : MonoBehaviour
         parent.SetActive(true);
 
         parentObjects = this.transform.Find("objects").gameObject; 
+
+        initObjectDistance = Vector3.Distance(Camera.main.transform.position, parentObjects.transform.position);
 
         parentCopy = Instantiate(parent);
         parentCopy.transform.parent = transform;
@@ -264,9 +268,7 @@ public class MultiViewer : MonoBehaviour
 
                 Quaternion newRotation = parentObject.Item2;
 
-                BoxCollider boxCollider = t.gameObject.GetComponent<BoxCollider>();
-
-                float objScale = getObjectScale(t.gameObject);
+                BoxCollider boxCollider = t.transform.Find("Frame").gameObject.transform.Find("bounds").gameObject.GetComponent<BoxCollider>();
 
                 t.rotation = newRotation;
 
@@ -362,6 +364,8 @@ public class MultiViewer : MonoBehaviour
 
         foreach(Transform obj in parentObjects.transform){
             obj.name = obj.name.Replace(parent.name, "");
+
+            GameObject frame = obj.transform.Find("Frame").gameObject;
         }
 
         placeChildren();
@@ -387,11 +391,6 @@ public class MultiViewer : MonoBehaviour
         return e.id;
     }
 
-    private float getObjectScale(GameObject g){
-        Object o = g.GetComponent<Object>();
-
-        return o.scale;
-    }
 
     private float getWidth(GameObject g){
         GameObject leftAnchor = g.transform.Find("TopLeft").gameObject;
@@ -482,6 +481,14 @@ public class MultiViewer : MonoBehaviour
             }
             else{
                 rb.MovePosition(g.transform.position + cameraDir * moveStep);
+            }
+
+            if(g.tag == "Object"){
+                GameObject frame = g.transform.Find("Frame").gameObject;
+                float distance = Vector3.Distance(camera.transform.position, g.transform.position);
+
+                float scale = Mathf.Abs(distance) / Mathf.Abs(initObjectDistance) ;
+                frame.transform.localScale = new Vector3(scale, scale, scale);
             }
 
             enableInteraction(g);
