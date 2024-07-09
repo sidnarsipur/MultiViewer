@@ -35,7 +35,7 @@ public class MultiViewer : MonoBehaviour
     //Clears the environment by disabling all objects and enabling interactions
     public void clearEnv()
     {
-        logger.log("General", "CLEARING ENVIRONMENT - ACTION CLEARENV");
+        logger.log("MultiViewer", "Clearing Environment - CLEARENV");
 
         foreach(GameObject g in children)
         {
@@ -53,16 +53,16 @@ public class MultiViewer : MonoBehaviour
     {
         clearEnv(); 
 
-        logger.log("General", "SETTING ENVIRONMENT - ACTION SETENV");
+        logger.log("MultiViewer", "Initializing Environment - SETENV");
 
-        logger.log("MultiViewer", "SETTING PARENT - " + parent.name + " - ACTION SETENV");
+        logger.log("MultiViewer", "Setting Parent To " + parent.name + " - SETENV");
 
         Environment e = parent.GetComponent<Environment>();
         e.id = 0;
 
         for(int i = 0; i < children.Count; i++)
         {
-            logger.log("MultiViewer", "ADDING CHILD - " + children[i].name + " - ACTION SETENV");
+            logger.log("MultiViewer", "Adding Child " + children[i].name + " - SETENV");
 
             Environment childEnv = children[i].GetComponent<Environment>();
             childEnv.id = i + 1;
@@ -100,6 +100,7 @@ public class MultiViewer : MonoBehaviour
         Camera.main.transform.rotation = Quaternion.identity;
 
         Debug.Log("Set Env Finished");
+        logger.log("MultiViewer", "Environment Setup Complete - SETENV");
     }
 
     public void createChildObjects()
@@ -170,6 +171,8 @@ public class MultiViewer : MonoBehaviour
             g.transform.position = objectPosition;
 
             prevX = getRightAnchor(g).transform.position.x;
+
+            logger.log("MultiViewer", "Child " + g.name + " Placed at " + objectPosition + " - PLACECHILDREN");
         }
     }
 
@@ -189,7 +192,7 @@ public class MultiViewer : MonoBehaviour
         foreach (Transform obj in parentObjects.transform)
         {
 
-            logger.log("Objects", obj.name + " is  at " + obj.position + " - ACTION PLACECHILDOBJECTS");
+            logger.log("Objects", "Object " + obj.name + " is  at " + obj.position + " - PLACECHILDOBJECTS");
 
             Vector3 distance = new Vector3(
                 obj.position.x - parentAvatar.transform.position.x,
@@ -204,8 +207,6 @@ public class MultiViewer : MonoBehaviour
 
         foreach (GameObject child in children)
         {
-
-            // Debug.Log("Placing objects for " + child.name);
 
             GameObject childLeftAnchor = child.transform.Find("TopLeft").gameObject;
             GameObject childRightAnchor = child.transform.Find("BottomRight").gameObject;
@@ -272,7 +273,6 @@ public class MultiViewer : MonoBehaviour
                 if(!IsCollidingAtPosition(boxCollider, newPosition, newRotation, t.gameObject.name)){
                     t.position = newPosition;
                 }
-
             }
         }
     }
@@ -295,14 +295,13 @@ public class MultiViewer : MonoBehaviour
 
     public void changeParent(GameObject newParent)
     {   
-        Debug.Log("Changing parent to " + newParent.name);
-
-        logger.log("MultiViewer", "SETTING PARENT - " + newParent.name + " - ACTION CHANGEPARENT");
-
         if(string.Equals(newParent.name, "parentCopy")){
             Debug.Log("Environment is already the parent.");
             return;
         }
+
+        Debug.Log("Changing parent to " + newParent.name);
+        logger.log("MultiViewer", "Changing Parent To - " + newParent.name + " - CHANGEPARENT");
 
         //Reset Interactions
         disableInteraction(newParent);
@@ -369,6 +368,7 @@ public class MultiViewer : MonoBehaviour
 
         selectedGameObject = null;
 
+        logger.log("MultiViewer", "Parent Set To - " + newParent.name + " - CHANGEPARENT");
     }
 
     private float getScale(GameObject g){
@@ -409,7 +409,7 @@ public class MultiViewer : MonoBehaviour
     public void setSelectedGameObject(GameObject g){ 
         if (g != null){
             Debug.Log("Selecting: " + g.name);
-            logger.log("MultiViewer", "SELECTED OBJECT - " + g.name + " - ACTION SETSELECTEDOBJECT");
+            logger.log("Objects", "Selected Object " + g.name + " - SETSELECTEDOBJECT");
 
             selectedGameObject = g;
         }
@@ -458,7 +458,7 @@ public class MultiViewer : MonoBehaviour
             obj.transform.rotation = state.rotation;
             obj.transform.localScale = state.scale;
 
-            logger.log("Objects", "NEW POSITION - " + obj.name + " moved to " + obj.transform.position + " - ACTION RESETOBJECTSTATE");
+            logger.log("Objects", obj.name + " position moved to " + obj.transform.position + " - RESETOBJECTSTATE");
         }
         else{
             Debug.Log("Object original state not found");
@@ -486,7 +486,7 @@ public class MultiViewer : MonoBehaviour
 
             enableInteraction(g);
 
-            logger.log("Objects", "NEW POSITION - " + g.name + " moved to " + g.transform.position + " - ACTION MOVEOBJECT");
+            logger.log("Objects", g.name + " position moved to " + g.transform.position + " - MOVEOBJECT");
         }
         else{
             Debug.Log("No object selected");
@@ -498,9 +498,10 @@ public class MultiViewer : MonoBehaviour
     {
         logger = new Logger();
 
-        logger.createLog("General");
         logger.createLog("Objects");
         logger.createLog("MultiViewer");
+
+        logger.log("MultiViewer", "Starting MultiViewer - START");
         
         StoreOriginalState(parent);
         
@@ -545,6 +546,6 @@ public class MultiViewer : MonoBehaviour
 
     void OnApplicationQuit()
     {
-        logger.log("General", "APPLICATION QUIT - ACTION APPLICATIONQUIT");
+        logger.log("General", "Quitting MultiViewer - APPLICATIONQUIT");
     }
 }

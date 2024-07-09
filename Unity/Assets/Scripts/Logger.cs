@@ -1,5 +1,3 @@
-//Create .txt logs to various files
-
 using System;
 using System.IO;
 using UnityEngine;
