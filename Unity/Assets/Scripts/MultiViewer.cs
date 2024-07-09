@@ -74,7 +74,7 @@ public class MultiViewer : MonoBehaviour
 
         parentObjects = this.transform.Find("objects").gameObject; 
 
-        initObjectDistance = Vector3.Distance(Camera.main.transform.position, parentObjects.transform.position);
+        initObjectDistance = Vector3.Distance(parent.transform.Find("Height").transform.position, parentObjects.transform.position);
 
         parentCopy = Instantiate(parent);
         parentCopy.transform.parent = transform;
@@ -150,7 +150,7 @@ public class MultiViewer : MonoBehaviour
             GameObject g = children[i];
             g.SetActive(true);
             
-            float scale = getScale(g);
+            float scale = getMiniatureScale(g);
             g.transform.localScale = new Vector3(scale, scale, scale);
 
             children[i].transform.Find("Wall")?.gameObject.SetActive(false);
@@ -207,6 +207,21 @@ public class MultiViewer : MonoBehaviour
             Quaternion rotation = obj.rotation;
 
             parentObjectLocations.Add(obj.name, (distance, rotation));
+
+            float scaleDist = Vector3.Distance(parent.transform.Find("Height").transform.position, obj.position);
+
+            GameObject bounds = obj.Find("bounds").gameObject;
+            GameObject window = obj.Find("window").gameObject;
+
+            Vector3 originalScale = getOriginalScale(obj.gameObject);  
+
+            Vector3 scale = originalScale * (Mathf.Abs(scaleDist) / Mathf.Abs(initObjectDistance));
+
+            Debug.Log("Original Scale: " + originalScale + " - New Scale: " + scale + " - Distance: " + scaleDist + " - Init Distance: " + initObjectDistance);
+                
+            // Apply the new scale
+            bounds.transform.localScale = new Vector3(scale.x, scale.y, originalScale.z);
+            window.transform.localScale = new Vector3(scale.x, scale.y, originalScale.z);
         }
 
         foreach (GameObject child in children)
@@ -268,7 +283,7 @@ public class MultiViewer : MonoBehaviour
 
                 Quaternion newRotation = parentObject.Item2;
 
-                BoxCollider boxCollider = t.transform.Find("Frame").gameObject.transform.Find("bounds").gameObject.GetComponent<BoxCollider>();
+                BoxCollider boxCollider = t.transform.Find("bounds").gameObject.GetComponent<BoxCollider>();
 
                 t.rotation = newRotation;
 
@@ -316,7 +331,7 @@ public class MultiViewer : MonoBehaviour
         Destroy(parentCopy);
 
         //Reset original parent's scale, objects and avatar
-        float scale = getScale(parent);
+        float scale = getMiniatureScale(parent);
         parent.transform.localScale = new Vector3(scale, scale, scale);
         children.Add(parent);
 
@@ -375,7 +390,7 @@ public class MultiViewer : MonoBehaviour
         logger.log("MultiViewer", "Parent Set To - " + newParent.name + " - CHANGEPARENT");
     }
 
-    private float getScale(GameObject g){
+    private float getMiniatureScale(GameObject g){
          Environment e = g.GetComponent<Environment>();
 
           if (e != null)
@@ -432,18 +447,31 @@ public class MultiViewer : MonoBehaviour
             RayGrabInteraction?.SetActive(true);
     }
     
-    private void StoreOriginalState(GameObject obj) 
+    private void StoreOriginalState(string name, GameObject obj) 
     {
-        if (!originalStates.ContainsKey(obj.name))
+        if (!originalStates.ContainsKey(name))
         {
             Vector3 originalPosition = obj.transform.position;
             Quaternion originalRotation = obj.transform.rotation;
             Vector3 originalScale = obj.transform.localScale;
         
-            originalStates.Add(obj.name, new ObjectState(originalPosition, originalRotation, originalScale));
+            originalStates.Add(name, new ObjectState(originalPosition, originalRotation, originalScale));
         }
         else{
             Debug.Log("Object original state already stored");
+        }
+    }
+
+    private Vector3 getOriginalScale(GameObject obj){
+        if (originalStates.ContainsKey(obj.name))
+        {
+            ObjectState state = originalStates[obj.name];
+
+            return state.scale;
+        }
+        else{
+            return new Vector3(0, 0, 0);
+            Debug.Log("Object original state not found");
         }
     }
     
@@ -453,9 +481,19 @@ public class MultiViewer : MonoBehaviour
         {
             ObjectState state = originalStates[obj.name];
 
+            if(obj.tag == "Object"){
+                GameObject bounds = obj.transform.Find("bounds").gameObject;
+                GameObject window = obj.transform.Find("window").gameObject;
+
+                bounds.transform.localScale = state.scale;
+                window.transform.localScale = state.scale;
+            }
+            else{
+                obj.transform.localScale = state.scale;
+            }
+
             obj.transform.position = state.position;
             obj.transform.rotation = state.rotation;
-            obj.transform.localScale = state.scale;
 
             logger.log("Objects", obj.name + " position moved to " + obj.transform.position + " - RESETOBJECTSTATE");
         }
@@ -483,13 +521,22 @@ public class MultiViewer : MonoBehaviour
                 rb.MovePosition(g.transform.position + cameraDir * moveStep);
             }
 
-            if(g.tag == "Object"){
-                GameObject frame = g.transform.Find("Frame").gameObject;
-                float distance = Vector3.Distance(camera.transform.position, g.transform.position);
+            // if(g.tag == "Object"){
+            //     float distance = Vector3.Distance(parent.transform.Find("Height").transform.position, g.transform.position);
 
-                float scale = Mathf.Abs(distance) / Mathf.Abs(initObjectDistance) ;
-                frame.transform.localScale = new Vector3(scale, scale, scale);
-            }
+            //     GameObject bounds = g.transform.Find("bounds").gameObject;
+            //     GameObject window = g.transform.Find("window").gameObject;
+
+            //     Vector3 originalScale = getOriginalScale(g);  
+
+            //     Vector3 scale = originalScale * (Mathf.Abs(distance) / Mathf.Abs(initObjectDistance));
+
+            //     Debug.Log("Original Scale: " + originalScale + " - New Scale: " + scale + " - Distance: " + distance + " - Init Distance: " + initObjectDistance);
+                
+            //     // Apply the new scale
+            //     bounds.transform.localScale = new Vector3(scale.x, scale.y, originalScale.z);
+            //     window.transform.localScale = new Vector3(scale.x, scale.y, originalScale.z);
+            // }
 
             enableInteraction(g);
 
@@ -511,10 +558,10 @@ public class MultiViewer : MonoBehaviour
 
         logger.log("MultiViewer", "Starting MultiViewer - START");
         
-        StoreOriginalState(parent);
+        StoreOriginalState(parent.name, parent);
         
         foreach(GameObject child in children){
-            StoreOriginalState(child);
+            StoreOriginalState(child.name, child);
         }
 
         setEnv();
@@ -522,7 +569,7 @@ public class MultiViewer : MonoBehaviour
         placeChildren();   
 
         foreach(Transform t in parentObjects.transform){
-            StoreOriginalState(t.gameObject);
+            StoreOriginalState(t.gameObject.name, t.Find("bounds").gameObject);
         }   
     }
 
