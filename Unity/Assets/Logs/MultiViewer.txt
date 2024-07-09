@@ -216,3 +216,29 @@
 13:15:02 - Child Izone Placed at (0.34, -0.43, 0.28) - PLACECHILDREN
 13:15:02 - Child StudyRoom Placed at (0.82, -0.43, 0.28) - PLACECHILDREN
 13:17:13 - Quitting MultiViewer - APPLICATIONQUIT
+14:18:57 - Starting MultiViewer - START
+14:18:57 - Clearing Environment - CLEARENV
+14:18:57 - Initializing Environment - SETENV
+14:18:57 - Setting Parent To LivingRoom - SETENV
+14:18:57 - Adding Child Carlson - SETENV
+14:18:57 - Adding Child Izone - SETENV
+14:18:57 - Adding Child StudyRoom - SETENV
+14:18:57 - Environment Setup Complete - SETENV
+14:18:57 - Child parentCopy Placed at (-0.53, -0.35, -0.12) - PLACECHILDREN
+14:18:57 - Child Carlson Placed at (-0.27, -0.35, -0.12) - PLACECHILDREN
+14:18:57 - Child Izone Placed at (0.09, -0.35, -0.12) - PLACECHILDREN
+14:18:57 - Child StudyRoom Placed at (0.56, -0.35, -0.12) - PLACECHILDREN
+14:21:23 - Quitting MultiViewer - APPLICATIONQUIT
+14:36:58 - Starting MultiViewer - START
+14:36:58 - Clearing Environment - CLEARENV
+14:36:58 - Initializing Environment - SETENV
+14:36:58 - Setting Parent To LivingRoom - SETENV
+14:36:58 - Adding Child Carlson - SETENV
+14:36:58 - Adding Child Izone - SETENV
+14:36:58 - Adding Child StudyRoom - SETENV
+14:36:58 - Environment Setup Complete - SETENV
+14:36:58 - Child parentCopy Placed at (-0.53, -0.35, -0.12) - PLACECHILDREN
+14:36:58 - Child Carlson Placed at (-0.27, -0.35, -0.12) - PLACECHILDREN
+14:36:58 - Child Izone Placed at (0.09, -0.35, -0.12) - PLACECHILDREN
+14:36:58 - Child StudyRoom Placed at (0.56, -0.35, -0.12) - PLACECHILDREN
+14:38:57 - Quitting MultiViewer - APPLICATIONQUIT
