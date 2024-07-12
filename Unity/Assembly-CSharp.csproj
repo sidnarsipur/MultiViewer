@@ -66,8 +66,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Logs\Controller.txt" />
+    <None Include="Assets\Logs\MultiViewer_1.txt" />
     <None Include="Assets\Logs\Objects.txt" />
     <None Include="Assets\Logs\MultiViewer.txt" />
+    <None Include="Assets\Logs\Objects_1.txt" />
+    <None Include="Assets\Logs\Controller_1.txt" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

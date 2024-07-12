@@ -21,24 +21,24 @@ public class MultiViewer : MonoBehaviour
    
     private Dictionary<string, ObjectState> originalStates = new Dictionary<string, ObjectState>(); //Original states of objects
 
-    float initObjectDistance;
-
     private Logger logger;
 
-    private List<string> leisureObjects = new List<string> {"MusicPlayer", "Messenger", "Instagram", "VideoPlayer", "News", "Game", "Clock"};
-    private List<string> prodObjects = new List<string> {"Slack", "Calendar", "Word", "MusicPlayer", "Research", "Mail", "Clock"};
+    private List<string> leisureObjects = new List<string> {"MusicPlayer", "Messenger", "Instagram", "VideoPlayer", "News", "Game", "Clock", "Weather"};
+    private List<string> prodObjects = new List<string> {"Slack", "Word", "Calendar", "MusicPlayer", "Research", "Mail", "Clock", "Weather"};
 
     private class ObjectState
     {
         public Vector3 position;
         public Quaternion rotation;
         public Vector3 scale;
+        public Vector3 windowScale;
 
-        public ObjectState(Vector3 pos, Quaternion rot, Vector3 scl)
+        public ObjectState(Vector3 pos, Quaternion rot, Vector3 scl, Vector3 winScl)
         {
             position = pos;
             rotation = rot;
             scale = scl;
+            windowScale = winScl;
         }
     }
 
@@ -79,23 +79,6 @@ public class MultiViewer : MonoBehaviour
         }
 
         parent.SetActive(true);
-
-        parentObjects = this.transform.Find("objects").gameObject; 
-
-        foreach(Transform t in parentObjects.transform){
-            if(scenario == Scenario.Leisure){
-                if(!leisureObjects.Contains(t.gameObject.name)){
-                    t.gameObject.SetActive(false);
-                }
-            }
-            else{
-                if(!prodObjects.Contains(t.gameObject.name)){
-                    t.gameObject.SetActive(false);
-                }
-            }
-        }
-
-        initObjectDistance = Vector3.Distance(parent.transform.Find("Height").transform.position, parentObjects.transform.position);
 
         parentCopy = Instantiate(parent);
         parentCopy.transform.parent = transform;
@@ -216,6 +199,12 @@ public class MultiViewer : MonoBehaviour
 
         foreach (Transform obj in parentObjects.transform)
         {
+            if(obj.gameObject.activeSelf == false){
+                continue;
+            }
+            else{
+               Debug.Log("Object " + obj.name + " is active");
+            }
 
             logger.log("Objects", "Object " + obj.name + " is  at " + obj.position + " - PLACECHILDOBJECTS");
 
@@ -234,20 +223,22 @@ public class MultiViewer : MonoBehaviour
             GameObject bounds = obj.Find("bounds").gameObject;
             GameObject window = obj.Find("window").gameObject;
 
-            Vector3 originalScale = getOriginalScale(obj.gameObject);  
+            Vector3 boundScale = getOriginalScale(obj.gameObject);
+            Vector3 windowScale = getWindowScale(obj.gameObject);
 
-            Vector3 scale = originalScale * (Mathf.Abs(scaleDist) / Mathf.Abs(initObjectDistance));
+            float initObjectDistance = Mathf.Abs(getOriginalDistance(obj.gameObject));
 
-            Debug.Log("Original Scale: " + originalScale + " - New Scale: " + scale + " - Distance: " + scaleDist + " - Init Distance: " + initObjectDistance);
+            Vector3 updatedBoundScale = boundScale * (Mathf.Abs(scaleDist) / initObjectDistance);
+            Vector3 updatedWindowScale = windowScale * (Mathf.Abs(scaleDist) / initObjectDistance);
+
+            Debug.Log("Original Scale: " + boundScale + " - New Scale: " + updatedBoundScale + " - Distance: " + scaleDist + " - Init Distance: " + initObjectDistance + " - Object: " + obj.name);
                 
-            // Apply the new scale
-            bounds.transform.localScale = new Vector3(scale.x, scale.y, originalScale.z);
-            window.transform.localScale = new Vector3(scale.x, scale.y, originalScale.z);
+            bounds.transform.localScale = new Vector3(updatedBoundScale.x, updatedBoundScale.y, boundScale.z);
+            window.transform.localScale = new Vector3(updatedWindowScale.x, updatedWindowScale.y, windowScale.z);
         }
 
         foreach (GameObject child in children)
         {
-
             GameObject childLeftAnchor = child.transform.Find("TopLeft").gameObject;
             GameObject childRightAnchor = child.transform.Find("BottomRight").gameObject;
 
@@ -276,6 +267,11 @@ public class MultiViewer : MonoBehaviour
 
             foreach (Transform t in childObjects)
             {
+                
+                if(t.gameObject.activeSelf == false){
+                    continue;
+                }
+
                 Object obj = t.gameObject.GetComponent<Object>();
 
                 var parentObject = parentObjectLocations[t.name.Replace(child.name, "")];
@@ -474,9 +470,21 @@ public class MultiViewer : MonoBehaviour
         {
             Vector3 originalPosition = obj.transform.position;
             Quaternion originalRotation = obj.transform.rotation;
-            Vector3 originalScale = obj.transform.localScale;
+
+            Vector3 originalScale;
+            Vector3 windowScale;
+
+            if(obj.tag == "Object"){
+                originalScale = obj.transform.Find("bounds").transform.localScale;
+                windowScale = obj.transform.Find("window").transform.localScale;
+            }
+            else
+            {
+                originalScale = obj.transform.localScale;
+                windowScale = new Vector3(0, 0, 0);
+            }
         
-            originalStates.Add(name, new ObjectState(originalPosition, originalRotation, originalScale));
+            originalStates.Add(name, new ObjectState(originalPosition, originalRotation, originalScale, windowScale));
         }
         else{
             Debug.Log("Object original state already stored");
@@ -493,6 +501,32 @@ public class MultiViewer : MonoBehaviour
         else{
             Debug.Log("Object original state not found");
             return new Vector3(0, 0, 0);
+        }
+    }
+
+    private Vector3 getWindowScale(GameObject obj){
+        if (originalStates.ContainsKey(obj.name))
+        {
+            ObjectState state = originalStates[obj.name];
+
+            return state.windowScale;
+        }
+        else{
+            Debug.Log("Object original state not found");
+            return new Vector3(0, 0, 0);
+        }
+    }
+
+    private float getOriginalDistance(GameObject obj){
+        if (originalStates.ContainsKey(obj.name))
+        {
+            ObjectState state = originalStates[obj.name];
+
+            return Vector3.Distance(state.position, parent.transform.Find("Height").transform.position);
+        }
+        else{
+            Debug.Log("Object original state not found");
+            return 0;
         }
     }
     
@@ -542,23 +576,6 @@ public class MultiViewer : MonoBehaviour
                 rb.MovePosition(g.transform.position + cameraDir * moveStep);
             }
 
-            // if(g.tag == "Object"){
-            //     float distance = Vector3.Distance(parent.transform.Find("Height").transform.position, g.transform.position);
-
-            //     GameObject bounds = g.transform.Find("bounds").gameObject;
-            //     GameObject window = g.transform.Find("window").gameObject;
-
-            //     Vector3 originalScale = getOriginalScale(g);  
-
-            //     Vector3 scale = originalScale * (Mathf.Abs(distance) / Mathf.Abs(initObjectDistance));
-
-            //     Debug.Log("Original Scale: " + originalScale + " - New Scale: " + scale + " - Distance: " + distance + " - Init Distance: " + initObjectDistance);
-                
-            //     // Apply the new scale
-            //     bounds.transform.localScale = new Vector3(scale.x, scale.y, originalScale.z);
-            //     window.transform.localScale = new Vector3(scale.x, scale.y, originalScale.z);
-            // }
-
             enableInteraction(g);
 
             logger.log("Objects", g.name + " position moved to " + g.transform.position + " - MOVEOBJECT");
@@ -585,13 +602,29 @@ public class MultiViewer : MonoBehaviour
             StoreOriginalState(child.name, child);
         }
 
-        setEnv();
-        createChildObjects();
-        placeChildren();   
+        parentObjects = this.transform.Find("objects").gameObject; 
 
         foreach(Transform t in parentObjects.transform){
-            StoreOriginalState(t.gameObject.name, t.Find("bounds").gameObject);
-        }   
+            if(scenario == Scenario.Leisure){
+                if(!leisureObjects.Contains(t.gameObject.name)){
+                    t.gameObject.SetActive(false);
+                    continue;
+                }
+            }
+            else{
+                if(!prodObjects.Contains(t.gameObject.name)){
+                    t.gameObject.SetActive(false);
+                    continue;
+                }
+            }
+            Debug.Log("Storing original state for " + t.gameObject.name);
+            StoreOriginalState(t.gameObject.name, t.gameObject);
+        }
+
+        setEnv();
+
+        createChildObjects(); 
+        placeChildren();
     }
 
     // Update is called once per frame
