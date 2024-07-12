@@ -25,8 +25,8 @@ public class MultiViewer : MonoBehaviour
 
     private Logger logger;
 
-    private string[] leisureObjects = {"MusicPlayer", "Messenger", "Instagram", "VideoPlayer", "News"};
-    private string[] prodObjects = {"Slack", "Calendar", "Word", "MusicPlayer", "Research", "Mail"};
+    private string[] leisureObjects = {"MusicPlayer", "Messenger", "Instagram", "VideoPlayer", "News", "Game", "Clock"};
+    private string[] prodObjects = {"Slack", "Calendar", "Word", "MusicPlayer", "Research", "Mail", "Clock"};
 
     private class ObjectState
     {
