@@ -8,6 +8,11 @@ public class MultiViewer : MonoBehaviour
     public GameObject parent; //Parent environment
     public List<GameObject> children; //List of children environments
 
+    public enum Scenario { Leisure, Productivity };  
+    public Scenario scenario;    
+
+    public int logNumber = 1;
+
     private GameObject parentObjects; //Objects in the parent environment
     private GameObject parentCopy; //Copy of the parent environment
     private Vector3 parentAvatarPosition; //Avatar in the parent environment
@@ -19,6 +24,9 @@ public class MultiViewer : MonoBehaviour
     float initObjectDistance;
 
     private Logger logger;
+
+    private string[] leisureObjects = {"MusicPlayer", "Messenger", "Instagram", "VideoPlayer", "News"};
+    private string[] prodObjects = {"Slack", "Calendar", "Word", "MusicPlayer", "Research", "Mail"};
 
     private class ObjectState
     {
@@ -470,8 +478,8 @@ public class MultiViewer : MonoBehaviour
             return state.scale;
         }
         else{
-            return new Vector3(0, 0, 0);
             Debug.Log("Object original state not found");
+            return new Vector3(0, 0, 0);
         }
     }
     
@@ -550,7 +558,7 @@ public class MultiViewer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        logger = new Logger();
+        logger = new Logger(logNumber);
 
         logger.createLog("Objects");
         logger.createLog("MultiViewer");
