@@ -25,8 +25,8 @@ public class MultiViewer : MonoBehaviour
 
     private Logger logger;
 
-    private string[] leisureObjects = {"MusicPlayer", "Messenger", "Instagram", "VideoPlayer", "News", "Game", "Clock"};
-    private string[] prodObjects = {"Slack", "Calendar", "Word", "MusicPlayer", "Research", "Mail", "Clock"};
+    private List<string> leisureObjects = new List<string> {"MusicPlayer", "Messenger", "Instagram", "VideoPlayer", "News", "Game", "Clock"};
+    private List<string> prodObjects = new List<string> {"Slack", "Calendar", "Word", "MusicPlayer", "Research", "Mail", "Clock"};
 
     private class ObjectState
     {
@@ -81,6 +81,19 @@ public class MultiViewer : MonoBehaviour
         parent.SetActive(true);
 
         parentObjects = this.transform.Find("objects").gameObject; 
+
+        foreach(Transform t in parentObjects.transform){
+            if(scenario == Scenario.Leisure){
+                if(!leisureObjects.Contains(t.gameObject.name)){
+                    t.gameObject.SetActive(false);
+                }
+            }
+            else{
+                if(!prodObjects.Contains(t.gameObject.name)){
+                    t.gameObject.SetActive(false);
+                }
+            }
+        }
 
         initObjectDistance = Vector3.Distance(parent.transform.Find("Height").transform.position, parentObjects.transform.position);
 
