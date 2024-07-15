@@ -11,7 +11,7 @@ public class MultiViewer : MonoBehaviour
     public enum Scenario { Leisure, Productivity };  
     public Scenario scenario;    
 
-    public string logNumber = "1";
+    public string logString = "1";
 
     private GameObject parentObjects; //Objects in the parent environment
     private GameObject parentCopy; //Copy of the parent environment
@@ -274,7 +274,7 @@ public class MultiViewer : MonoBehaviour
             );
 
             if(window.tag == "Widget"){
-                updatedBoundScale.z = Mathf.Max((boundScale.z * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.z);
+                updatedBoundScale = boundScale;
                 updatedWindowScale.z = Mathf.Max((windowScale.z * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.z);
             }
                 
@@ -344,10 +344,42 @@ public class MultiViewer : MonoBehaviour
                 );
 
                 Quaternion newRotation = parentObject.Item2;
+                
+                // GameObject bounds = t.Find("bounds").gameObject;
+                // GameObject window = t.Find("window").gameObject;
+                
+                // Vector3 boundScale = getOriginalScale(t.gameObject);
+                // Vector3 windowScale = getWindowScale(t.gameObject);
+
+                // float miniautureScale = getMiniatureScale(child);
+                // float originalScale = getOriginalScale(child).x;
+                
+                // float scaleDist = Vector3.Distance(child.transform.Find("Height").transform.position, t.position) * (miniautureScale / originalScale);
+                // float initObjectDistance = Mathf.Abs(getOriginalDistance(t.gameObject));
+
+                // Vector3 updatedBoundScale = new Vector3 (
+                //     Mathf.Max((boundScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.x), 
+                //     Mathf.Max((boundScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.y),
+                //     boundScale.z
+                // );
+
+                // Vector3 updatedWindowScale = new Vector3 (
+                //     Mathf.Max((windowScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.x), 
+                //     Mathf.Max((windowScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.y),
+                //     windowScale.z
+                // );
+
+                // if(window.tag == "Widget"){
+                //     updatedBoundScale.z = Mathf.Max((boundScale.z * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.z);
+                //     updatedWindowScale.z = Mathf.Max((windowScale.z * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.z);
+                // }
+                    
+                // bounds.transform.localScale = updatedBoundScale;
+                // window.transform.localScale = updatedWindowScale;
 
                 BoxCollider boxCollider;
 
-                if(t.transform.Find("window").gameObject.tag == "Widget"){
+                if(isWidget(t.gameObject)){
                     boxCollider = t.transform.Find("window").gameObject.GetComponent<BoxCollider>();
                 }
                 else{
@@ -487,6 +519,15 @@ public class MultiViewer : MonoBehaviour
         return rightAnchor;
     }
 
+    private bool isWidget(GameObject g){
+        GameObject window = g.transform.Find("window").gameObject;
+
+        if(window.tag == "Widget"){
+            return true;
+        }
+        return false;
+    }
+
     public void setSelectedGameObject(GameObject g){ 
         if (g != null){
             Debug.Log("Selecting: " + g.name);
@@ -562,7 +603,7 @@ public class MultiViewer : MonoBehaviour
             return state.windowScale;
         }
         else{
-            Debug.Log("Object original state not found");
+            Debug.Log("Object original state not found for " + obj.name);
             return new Vector3(0, 0, 0);
         }
     }
@@ -617,15 +658,17 @@ public class MultiViewer : MonoBehaviour
             Camera camera = Camera.main;
             Vector3 cameraDir = (camera.transform.position - g.transform.position).normalized;
 
-            float moveStep = 0.03f;
-
-            if(dir){
+            float moveStep = dir ? 0.03f : -0.03f;
+            
+            if(!isWidget(g)){
                 rb.MovePosition(g.transform.position + cameraDir * -moveStep);
             }
             else{
-                rb.MovePosition(g.transform.position + cameraDir * moveStep);
-            }
+                GameObject window = g.transform.Find("window").gameObject;
 
+                window.transform.position = new Vector3(window.transform.position.x, window.transform.position.y, window.transform.position.z + cameraDir.z * moveStep);
+            }
+           
             enableInteraction(g);
 
             logger.log("Objects", g.name + " position moved to " + g.transform.position + " - MOVEOBJECT");
@@ -639,7 +682,7 @@ public class MultiViewer : MonoBehaviour
     void Start()
     {
 
-        logger = new Logger(logNumber);
+        logger = new Logger(logString);
 
         logger.createLog("Objects");
         logger.createLog("MultiViewer");
