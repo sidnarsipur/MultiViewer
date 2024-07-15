@@ -11,7 +11,7 @@ public class MultiViewer : MonoBehaviour
     public enum Scenario { Leisure, Productivity };  
     public Scenario scenario;    
 
-    public int logNumber = 1;
+    public string logNumber = "1";
 
     private GameObject parentObjects; //Objects in the parent environment
     private GameObject parentCopy; //Copy of the parent environment
@@ -80,10 +80,10 @@ public class MultiViewer : MonoBehaviour
             StoreOriginalState(t.gameObject.name, t.gameObject);
         }
 
-        int numObjects = 2;
+        int numObjects = 1;
 
         while(numObjects > 0){
-            int index = Random.Range(0, 8);
+            int index = Random.Range(0, 13);
             Transform t = parentObjects.transform.GetChild(index);
 
             if(t.gameObject.activeSelf == true){
@@ -261,13 +261,25 @@ public class MultiViewer : MonoBehaviour
 
             float initObjectDistance = Mathf.Abs(getOriginalDistance(obj.gameObject));
 
-            Vector3 updatedBoundScale = boundScale * (Mathf.Abs(scaleDist) / initObjectDistance);
-            Vector3 updatedWindowScale = windowScale * (Mathf.Abs(scaleDist) / initObjectDistance);
+            Vector3 updatedBoundScale = new Vector3 (
+                Mathf.Max((boundScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.x), 
+                Mathf.Max((boundScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.y),
+                boundScale.z
+            );
 
-            // Debug.Log("Original Scale: " + boundScale + " - New Scale: " + updatedBoundScale + " - Distance: " + scaleDist + " - Init Distance: " + initObjectDistance + " - Object: " + obj.name);
+            Vector3 updatedWindowScale = new Vector3 (
+                Mathf.Max((windowScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.x), 
+                Mathf.Max((windowScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.y),
+                windowScale.z
+            );
+
+            if(window.tag == "Widget"){
+                updatedBoundScale.z = Mathf.Max((boundScale.z * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.z);
+                updatedWindowScale.z = Mathf.Max((windowScale.z * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.z);
+            }
                 
-            bounds.transform.localScale = new Vector3(updatedBoundScale.x, updatedBoundScale.y, boundScale.z);
-            window.transform.localScale = new Vector3(updatedWindowScale.x, updatedWindowScale.y, windowScale.z);
+            bounds.transform.localScale = updatedBoundScale;
+            window.transform.localScale = updatedWindowScale;
         }
 
         foreach (GameObject child in children)
@@ -333,8 +345,15 @@ public class MultiViewer : MonoBehaviour
 
                 Quaternion newRotation = parentObject.Item2;
 
-                BoxCollider boxCollider = t.transform.Find("bounds").gameObject.GetComponent<BoxCollider>();
+                BoxCollider boxCollider;
 
+                if(t.transform.Find("window").gameObject.tag == "Widget"){
+                    boxCollider = t.transform.Find("window").gameObject.GetComponent<BoxCollider>();
+                }
+                else{
+                    boxCollider = t.transform.Find("bounds").gameObject.GetComponent<BoxCollider>();
+                }
+                
                 t.rotation = newRotation;
 
                 if(!IsCollidingAtPosition(boxCollider, newPosition, newRotation, t.gameObject.name)){
@@ -619,6 +638,7 @@ public class MultiViewer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         logger = new Logger(logNumber);
 
         logger.createLog("Objects");

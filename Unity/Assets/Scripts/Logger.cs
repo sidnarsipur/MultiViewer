@@ -5,9 +5,9 @@ using UnityEngine;
 public class Logger : MonoBehaviour
 {
 
-   public int logNumber = 1;
+   public string logNumber = "1";
 
-   public Logger(int logNumber){
+   public Logger(string logNumber){
       this.logNumber = logNumber;
    }
 

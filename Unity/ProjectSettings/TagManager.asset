@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Boundary
   - Object
+  - Widget
   layers:
   - Default
   - TransparentFX
