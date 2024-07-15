@@ -236,7 +236,7 @@ public class MultiViewer : MonoBehaviour
                 continue;
             }
             else{
-               Debug.Log("Object " + obj.name + " is active");
+            //    Debug.Log("Object " + obj.name + " is active");
             }
 
             logger.log("Objects", "Object " + obj.name + " is  at " + obj.position + " - PLACECHILDOBJECTS");
@@ -264,7 +264,7 @@ public class MultiViewer : MonoBehaviour
             Vector3 updatedBoundScale = boundScale * (Mathf.Abs(scaleDist) / initObjectDistance);
             Vector3 updatedWindowScale = windowScale * (Mathf.Abs(scaleDist) / initObjectDistance);
 
-            Debug.Log("Original Scale: " + boundScale + " - New Scale: " + updatedBoundScale + " - Distance: " + scaleDist + " - Init Distance: " + initObjectDistance + " - Object: " + obj.name);
+            // Debug.Log("Original Scale: " + boundScale + " - New Scale: " + updatedBoundScale + " - Distance: " + scaleDist + " - Init Distance: " + initObjectDistance + " - Object: " + obj.name);
                 
             bounds.transform.localScale = new Vector3(updatedBoundScale.x, updatedBoundScale.y, boundScale.z);
             window.transform.localScale = new Vector3(updatedWindowScale.x, updatedWindowScale.y, windowScale.z);
@@ -429,8 +429,6 @@ public class MultiViewer : MonoBehaviour
 
         foreach(Transform obj in parentObjects.transform){
             obj.name = obj.name.Replace(parent.name, "");
-
-            GameObject frame = obj.transform.Find("Frame").gameObject;
         }
 
         placeChildren();
