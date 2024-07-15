@@ -59,12 +59,45 @@ public class MultiViewer : MonoBehaviour
         Debug.Log("Clear Env Finished");
     }
 
+    public void setObjects()
+    {
+        parentObjects = this.transform.Find("objects").gameObject; 
+
+        foreach(Transform t in parentObjects.transform){
+            if(scenario == Scenario.Leisure){
+                if(!leisureObjects.Contains(t.gameObject.name)){
+                    t.gameObject.SetActive(false);
+                    continue;
+                }
+            }
+            else{
+                if(!prodObjects.Contains(t.gameObject.name)){
+                    t.gameObject.SetActive(false);
+                    continue;
+                }
+            }
+            Debug.Log("Storing original state for " + t.gameObject.name);
+            StoreOriginalState(t.gameObject.name, t.gameObject);
+        }
+
+        int numObjects = 2;
+
+        while(numObjects > 0){
+            int index = Random.Range(0, 8);
+            Transform t = parentObjects.transform.GetChild(index);
+
+            if(t.gameObject.activeSelf == true){
+                t.gameObject.SetActive(false);
+                numObjects--;
+            }
+        } 
+    }
+
     public void setEnv()
     {
         clearEnv(); 
 
         logger.log("MultiViewer", "Initializing Environment - SETENV");
-
         logger.log("MultiViewer", "Setting Parent To " + parent.name + " - SETENV");
 
         Environment e = parent.GetComponent<Environment>();
@@ -88,7 +121,7 @@ public class MultiViewer : MonoBehaviour
         parentAvatarPosition = parentAvatar.transform.position;
         parentAvatar.SetActive(false);
 
-        GameObject copy = Instantiate(parentObjects); //To be cleaned up!
+        GameObject copy = Instantiate(parentObjects);
         copy.transform.parent = parentCopy.transform;
         copy.name = parentCopy.name + "objects";
 
@@ -602,25 +635,7 @@ public class MultiViewer : MonoBehaviour
             StoreOriginalState(child.name, child);
         }
 
-        parentObjects = this.transform.Find("objects").gameObject; 
-
-        foreach(Transform t in parentObjects.transform){
-            if(scenario == Scenario.Leisure){
-                if(!leisureObjects.Contains(t.gameObject.name)){
-                    t.gameObject.SetActive(false);
-                    continue;
-                }
-            }
-            else{
-                if(!prodObjects.Contains(t.gameObject.name)){
-                    t.gameObject.SetActive(false);
-                    continue;
-                }
-            }
-            Debug.Log("Storing original state for " + t.gameObject.name);
-            StoreOriginalState(t.gameObject.name, t.gameObject);
-        }
-
+        setObjects();
         setEnv();
 
         createChildObjects(); 
