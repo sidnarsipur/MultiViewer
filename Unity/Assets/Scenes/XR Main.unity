@@ -5816,7 +5816,7 @@ MonoBehaviour:
   - {fileID: 1472279022}
   - {fileID: 976128777}
   scenario: 0
-  logNumber: 
+  logString: 1
 --- !u!4 &1229933830
 Transform:
   m_ObjectHideFlags: 0
@@ -8318,7 +8318,7 @@ MonoBehaviour:
   _forwardElement: {fileID: 0}
   _oneGrabTransformer: {fileID: 0}
   _twoGrabTransformer: {fileID: 0}
-  _targetTransform: {fileID: 0}
+  _targetTransform: {fileID: 322106027}
   _maxGrabPoints: -1
   _rigidbody: {fileID: 322106029}
   _kinematicWhileSelected: 0
@@ -9310,7 +9310,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1298286726002133438, guid: 380f9a6065d94554d94ec78b1136a83c, type: 3}
       propertyPath: m_TagString
-      value: Widget
+      value: Untagged
       objectReference: {fileID: 0}
     - target: {fileID: 1638298698137629143, guid: 380f9a6065d94554d94ec78b1136a83c, type: 3}
       propertyPath: m_Materials.Array.data[0]

@@ -251,7 +251,8 @@ public class MultiViewer : MonoBehaviour
 
             parentObjectLocations.Add(obj.name, (distance, rotation));
 
-            float scaleDist = Vector3.Distance(parent.transform.Find("Height").transform.position, obj.position);
+            Vector3 scaleDist = parent.transform.Find("Height").transform.position - obj.position;
+            float scaleMagnitude = scaleDist.magnitude;
 
             GameObject bounds = obj.Find("bounds").gameObject;
             GameObject window = obj.Find("window").gameObject;
@@ -262,20 +263,30 @@ public class MultiViewer : MonoBehaviour
             float initObjectDistance = Mathf.Abs(getOriginalDistance(obj.gameObject));
 
             Vector3 updatedBoundScale = new Vector3 (
-                Mathf.Max((boundScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.x), 
-                Mathf.Max((boundScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.y),
+                Mathf.Max((boundScale.x * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, boundScale.x), 
+                Mathf.Max((boundScale.y * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, boundScale.y),
                 boundScale.z
-            );
+            );  
 
             Vector3 updatedWindowScale = new Vector3 (
-                Mathf.Max((windowScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.x), 
-                Mathf.Max((windowScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.y),
+                Mathf.Max((windowScale.x * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, windowScale.x), 
+                Mathf.Max((windowScale.y * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, windowScale.y),
                 windowScale.z
             );
 
             if(window.tag == "Widget"){
+                scaleMagnitude = Vector3.Distance(parent.transform.Find("Height").transform.position, obj.Find("window").position);
+
                 updatedBoundScale = boundScale;
-                updatedWindowScale.z = Mathf.Max((windowScale.z * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.z);
+
+                updatedWindowScale = new Vector3 (
+                    Mathf.Max((windowScale.x * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, windowScale.x), 
+                    Mathf.Max((windowScale.y * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, windowScale.y),
+                    updatedWindowScale.z = Mathf.Max((windowScale.z * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, windowScale.z)
+                    );
+
+
+                Debug.Log("Widget " + obj.name + " : " + (parent.transform.Find("Height").transform.position - obj.Find("window").position));
             }
                 
             bounds.transform.localScale = updatedBoundScale;
@@ -665,8 +676,10 @@ public class MultiViewer : MonoBehaviour
             }
             else{
                 GameObject window = g.transform.Find("window").gameObject;
+                GameObject bounds = g.transform.Find("bounds").gameObject;
 
-                window.transform.position = new Vector3(window.transform.position.x, window.transform.position.y, window.transform.position.z + cameraDir.z * moveStep);
+                window.transform.position = new Vector3(window.transform.position.x, window.transform.position.y, window.transform.position.z + cameraDir.z * -moveStep);
+                bounds.transform.position = new Vector3(bounds.transform.position.x, bounds.transform.position.y, bounds.transform.position.z + cameraDir.z * -moveStep);
             }
            
             enableInteraction(g);
