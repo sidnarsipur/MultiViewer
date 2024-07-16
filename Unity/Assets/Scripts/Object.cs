@@ -5,12 +5,9 @@ using UnityEngine;
 public class Object : MonoBehaviour
 {
     MultiViewer m;
-
+    
     private bool collided = false;
-
-    // [HideInInspector]
-    public float scale;
-
+    
     void Start(){
         GameObject multiViewerGameObject = GameObject.Find("MultiViewer");
         m = multiViewerGameObject.GetComponent<MultiViewer>();
@@ -21,10 +18,6 @@ public class Object : MonoBehaviour
     public void selectChild(GameObject g){
         m.setSelectedGameObject(g);
     }
-
-    // public void unselectChild(){
-    //     m.setSelectedGameObject(null);
-    // }
 
     public void setCollided(bool collided){
         this.collided = collided;
@@ -38,7 +31,6 @@ public class Object : MonoBehaviour
     {
         if(collision.gameObject.tag == "Boundary"){
             setCollided(true);
-            // Debug.Log(gameObject.name + " Collided with: " + collision.gameObject.name);
         }
     }
     
@@ -46,9 +38,6 @@ public class Object : MonoBehaviour
     {
         if(collision.gameObject.tag == "Boundary"){
             setCollided(false);
-            // Debug.Log(gameObject.name + " Exited From: " + collision.gameObject.name);
         }
     }
-
-
 }
