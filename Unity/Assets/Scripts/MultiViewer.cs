@@ -223,6 +223,12 @@ public class MultiViewer : MonoBehaviour
             prevX = getRightAnchor(g).transform.position.x;
 
             logger.log("MultiViewer", "Child " + g.name + " Placed at " + objectPosition + " - PLACECHILDREN");
+
+            Transform childObjects = g.transform.Find((g.name + "objects"));
+
+            foreach(Transform obj in childObjects){
+                StoreOriginalState(obj.name, obj.gameObject);
+            }
         }
     }
 
@@ -259,19 +265,19 @@ public class MultiViewer : MonoBehaviour
            
             parentObjectLocations.Add(obj.name, (distance, rotation));
 
-            Vector3 scaleDist = parent.transform.Find("Height").transform.position - obj.position;
-            float scaleMagnitude = scaleDist.magnitude;
-
+            float scaleDist = Vector3.Distance(parent.transform.Find("Height").transform.position, obj.position);
+        
             Vector3 windowScale = getWindowScale(obj.gameObject);
             Vector3 updatedWindowScale;
             
             float initObjectDistance = Mathf.Abs(getOriginalDistance(obj.gameObject));
+            float ratio = Mathf.Abs(scaleDist) / initObjectDistance;
 
             if(isWidget(obj.gameObject)){
                 updatedWindowScale = new Vector3 (
-                    Mathf.Max((windowScale.x * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.5f, windowScale.x), 
-                    Mathf.Max((windowScale.y * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.5f, windowScale.y),
-                    Mathf.Max((windowScale.z * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.5f, windowScale.z)
+                    Mathf.Max(windowScale.x * ratio * 0.5f, windowScale.x), 
+                    Mathf.Max(windowScale.y * ratio * 0.5f, windowScale.y),
+                    Mathf.Max(windowScale.z * ratio * 0.5f, windowScale.z)
                     );
             }
             else{
@@ -279,14 +285,14 @@ public class MultiViewer : MonoBehaviour
                 Vector3 boundScale = getOriginalScale(obj.gameObject);
 
                 Vector3 updatedBoundScale = new Vector3 (
-                    Mathf.Max((boundScale.x * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, boundScale.x), 
-                    Mathf.Max((boundScale.y * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, boundScale.y),
+                    Mathf.Max(boundScale.x * ratio * 0.75f, boundScale.x), 
+                    Mathf.Max(boundScale.y * ratio * 0.75f, boundScale.y),
                     boundScale.z
                     );
 
-                updatedWindowScale = new Vector3 (
-                    Mathf.Max((windowScale.x * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, windowScale.x), 
-                    Mathf.Max((windowScale.y * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, windowScale.y),
+                updatedWindowScale = new Vector3(
+                    Mathf.Max(windowScale.x * ratio * 0.75f, windowScale.x), 
+                    Mathf.Max(windowScale.y * ratio * 0.75f, windowScale.y),
                     windowScale.z
                     ); 
                 
@@ -332,8 +338,10 @@ public class MultiViewer : MonoBehaviour
 
                 Object obj = t.gameObject.GetComponent<Object>();
 
-                var parentObject = parentObjectLocations[t.name.Replace(child.name, "")];
-                Vector3 distance = parentObject.Item1;
+                string parentObjectName = t.name.Replace(child.name, "");
+                
+                var parentObjectLocation = parentObjectLocations[parentObjectName];
+                Vector3 distance = parentObjectLocation.Item1;
 
                 if (distance.x > 0f){
                     parentWidth = parentRightAnchor.transform.position.x - parentAvatar.transform.position.x;
@@ -356,29 +364,34 @@ public class MultiViewer : MonoBehaviour
                     zCoord
                 );
 
-                Quaternion newRotation = parentObject.Item2;
+                Quaternion newRotation = parentObjectLocation.Item2;
+
+                GameObject parentObject = parentObjects.transform.Find(parentObjectName).gameObject;
 
                 GameObject window = t.Find("window").gameObject;
-                Vector3 windowScale = getWindowScale(t.gameObject);
 
-                float miniautureScale = getMiniatureScale(child);
-                float originalScale = getOriginalScale(child).x;
+                Vector3 windowScale = getWindowScale(parentObject);
+                Vector3 updatedWindowScale;
 
-                float scaleDist = Vector3.Distance(child.transform.Find("Height").transform.position, t.position) * (miniautureScale / originalScale);
-                float initObjectDistance = Mathf.Abs(getOriginalDistance(t.gameObject));
+                float originalDistance = Mathf.Abs(getOriginalDistance(parentObject));
+                float miniDistance = Mathf.Abs(Vector3.Distance(child.transform.Find("Height").transform.position, getOriginalPosition(t.gameObject)));
+
+                float scaleDist = Mathf.Abs(Vector3.Distance(child.transform.Find("Height").transform.position, t.position));
+
+                float ratio = scaleDist / miniDistance;
+
+                Debug.Log("Ratio for " + t.gameObject.name + " is " + ratio);
 
                 BoxCollider boxCollider;
 
                 if(isWidget(t.gameObject)){
                     boxCollider = window.GetComponent<BoxCollider>();
 
-                    Vector3 updatedWindowScale = new Vector3 (
-                        Mathf.Max((windowScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.5f, windowScale.x), 
-                        Mathf.Max((windowScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.5f, windowScale.y),
-                        Mathf.Max((windowScale.z * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.5f, windowScale.z)
+                    updatedWindowScale = new Vector3 (
+                        Mathf.Max(windowScale.x * ratio * 0.5f, windowScale.x), 
+                        Mathf.Max(windowScale.y * ratio * 0.5f, windowScale.y),
+                        Mathf.Max(windowScale.z * ratio * 0.5f, windowScale.z)
                     );
-
-                    window.transform.localScale = updatedWindowScale;
                 }
                 else{
                     boxCollider = t.transform.Find("bounds").gameObject.GetComponent<BoxCollider>();
@@ -387,20 +400,21 @@ public class MultiViewer : MonoBehaviour
                     Vector3 boundScale = bounds.transform.localScale;
 
                     Vector3 updatedBoundScale = new Vector3 (
-                        Mathf.Max((boundScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.x), 
-                        Mathf.Max((boundScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.y),
+                        Mathf.Max(boundScale.x * ratio * 0.75f, boundScale.x), 
+                        Mathf.Max(boundScale.y * ratio * 0.75f, boundScale.y),
                         boundScale.z
                     );
 
-                    Vector3 updatedWindowScale = new Vector3 (
-                        Mathf.Max((windowScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.x), 
-                        Mathf.Max((windowScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.y),
+                    updatedWindowScale = new Vector3(
+                        Mathf.Max(windowScale.x * ratio * 0.75f, windowScale.x), 
+                        Mathf.Max(windowScale.y * ratio * 0.75f, windowScale.y),
                         windowScale.z
                     );
 
                     bounds.transform.localScale = updatedBoundScale;
-                    window.transform.localScale = updatedWindowScale;
                 }
+
+                window.transform.localScale = updatedWindowScale;
 
                 if(!IsCollidingAtPosition(boxCollider, newPosition, newRotation, t.gameObject.name)){
                     if(isWidget(t.gameObject)){
@@ -608,6 +622,19 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
+    private Vector3 getOriginalPosition(GameObject obj){
+        if (originalStates.ContainsKey(obj.name))
+        {
+            ObjectState state = originalStates[obj.name];
+
+            return state.position;
+        }
+        else{
+            Debug.Log("Object original state not found for " + obj.name);
+            return new Vector3(0, 0, 0);
+        }
+    }
+
     private Vector3 getOriginalScale(GameObject obj){
         if (originalStates.ContainsKey(obj.name))
         {
@@ -616,7 +643,7 @@ public class MultiViewer : MonoBehaviour
             return state.scale;
         }
         else{
-            Debug.Log("Object original state not found");
+            Debug.Log("Object original state not found for " + obj.name);
             return new Vector3(0, 0, 0);
         }
     }
@@ -671,7 +698,7 @@ public class MultiViewer : MonoBehaviour
             logger.log("Objects", obj.name + " position moved to " + obj.transform.position + " - RESETOBJECTSTATE");
         }
         else{
-            Debug.Log("Object original state not found");
+            Debug.Log("Object original state not found for " + obj.name);
         }
     }
 
