@@ -11,8 +11,6 @@ public class Object : MonoBehaviour
     void Start(){
         GameObject multiViewerGameObject = GameObject.Find("MultiViewer");
         m = multiViewerGameObject.GetComponent<MultiViewer>();
-
-        scale = this.transform.localScale.x;
     }
 
     public void selectChild(GameObject g){

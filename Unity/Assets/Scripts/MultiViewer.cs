@@ -3,15 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class MultiViewer : MonoBehaviour
-{
-    [Header("MultiViewer")]                
-    public GameObject parent; //Parent environment
-    public List<GameObject> children; //List of children environments
+{                
+    private GameObject parent; //Parent environment
+    private List<GameObject> children; //List of children environments
 
+    public enum Environments { Bedroom, Carlson, Studyroom, Izone, Livingroom, Gamingroom };
+
+    [Header("Environment Setup")]
+    public List<Environments> environments;
+ 
     public enum Scenario { Leisure, Productivity };  
-    public Scenario scenario;    
 
+    [Header("Options")]
+    public Scenario scenario;    
     public string logString = "1";
+    public bool randomizeEnvironments = false;
+    public bool randomizeObjects = false;
 
     private GameObject parentObjects; //Objects in the parent environment
     private GameObject parentCopy; //Copy of the parent environment
@@ -80,15 +87,17 @@ public class MultiViewer : MonoBehaviour
             StoreOriginalState(t.gameObject.name, t.gameObject);
         }
 
-        int numObjects = 1;
+        if(randomizeObjects){
+            int numObjects = 2;
 
-        while(numObjects > 0){
-            int index = Random.Range(0, 13);
-            Transform t = parentObjects.transform.GetChild(index);
+            while(numObjects > 0){
+                int index = Random.Range(0, 13);
+                Transform t = parentObjects.transform.GetChild(index);
 
-            if(t.gameObject.activeSelf == true){
-                t.gameObject.SetActive(false);
-                numObjects--;
+                if(t.gameObject.activeSelf == true){
+                    t.gameObject.SetActive(false);
+                    numObjects--;
+                }
             }
         } 
     }
@@ -228,68 +237,62 @@ public class MultiViewer : MonoBehaviour
         float parentHeight = parentLeftAnchor.transform.position.y - parentAvatar.transform.position.y;
         float parentDepth = parentLeftAnchor.transform.position.z - parentAvatar.transform.position.z; 
 
-        Dictionary<string, (Vector3, Quaternion)> parentObjectLocations = new Dictionary<string, (Vector3, Quaternion)>();
+        Dictionary<string, (Vector3, Quaternion)> parentObjectLocations = new Dictionary<string, (Vector3, Quaternion)>(); //Location of objects in parent environment
 
         foreach (Transform obj in parentObjects.transform)
         {
             if(obj.gameObject.activeSelf == false){
                 continue;
-            }
-            else{
-            //    Debug.Log("Object " + obj.name + " is active");
-            }
+            }            
 
             logger.log("Objects", "Object " + obj.name + " is  at " + obj.position + " - PLACECHILDOBJECTS");
 
+            GameObject window = obj.Find("window").gameObject;
+            
             Vector3 distance = new Vector3(
-                obj.position.x - parentAvatar.transform.position.x,
-                obj.position.y - parentRightAnchor.transform.position.y,
-                obj.position.z - parentAvatar.transform.position.z
-            );
+                    obj.position.x - parentAvatar.transform.position.x,
+                    obj.position.y - parentRightAnchor.transform.position.y,
+                    obj.position.z - parentAvatar.transform.position.z
+                );
 
             Quaternion rotation = obj.rotation;
-
+           
             parentObjectLocations.Add(obj.name, (distance, rotation));
 
             Vector3 scaleDist = parent.transform.Find("Height").transform.position - obj.position;
             float scaleMagnitude = scaleDist.magnitude;
 
-            GameObject bounds = obj.Find("bounds").gameObject;
-            GameObject window = obj.Find("window").gameObject;
-
-            Vector3 boundScale = getOriginalScale(obj.gameObject);
             Vector3 windowScale = getWindowScale(obj.gameObject);
-
+            Vector3 updatedWindowScale;
+            
             float initObjectDistance = Mathf.Abs(getOriginalDistance(obj.gameObject));
 
-            Vector3 updatedBoundScale = new Vector3 (
-                Mathf.Max((boundScale.x * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, boundScale.x), 
-                Mathf.Max((boundScale.y * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, boundScale.y),
-                boundScale.z
-            );  
+            if(isWidget(obj.gameObject)){
+                updatedWindowScale = new Vector3 (
+                    Mathf.Max((windowScale.x * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.5f, windowScale.x), 
+                    Mathf.Max((windowScale.y * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.5f, windowScale.y),
+                    Mathf.Max((windowScale.z * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.5f, windowScale.z)
+                    );
+            }
+            else{
+                GameObject bounds = obj.Find("bounds").gameObject;
+                Vector3 boundScale = getOriginalScale(obj.gameObject);
 
-            Vector3 updatedWindowScale = new Vector3 (
-                Mathf.Max((windowScale.x * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, windowScale.x), 
-                Mathf.Max((windowScale.y * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, windowScale.y),
-                windowScale.z
-            );
-
-            if(window.tag == "Widget"){
-                scaleMagnitude = Vector3.Distance(parent.transform.Find("Height").transform.position, obj.Find("window").position);
-
-                updatedBoundScale = boundScale;
+                Vector3 updatedBoundScale = new Vector3 (
+                    Mathf.Max((boundScale.x * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, boundScale.x), 
+                    Mathf.Max((boundScale.y * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, boundScale.y),
+                    boundScale.z
+                    );
 
                 updatedWindowScale = new Vector3 (
                     Mathf.Max((windowScale.x * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, windowScale.x), 
                     Mathf.Max((windowScale.y * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, windowScale.y),
-                    updatedWindowScale.z = Mathf.Max((windowScale.z * (Mathf.Abs(scaleMagnitude) / initObjectDistance)) * 0.75f, windowScale.z)
-                    );
-
-
-                Debug.Log("Widget " + obj.name + " : " + (parent.transform.Find("Height").transform.position - obj.Find("window").position));
+                    windowScale.z
+                    ); 
+                
+                bounds.transform.localScale = updatedBoundScale;
             }
                 
-            bounds.transform.localScale = updatedBoundScale;
             window.transform.localScale = updatedWindowScale;
         }
 
@@ -323,7 +326,6 @@ public class MultiViewer : MonoBehaviour
 
             foreach (Transform t in childObjects)
             {
-                
                 if(t.gameObject.activeSelf == false){
                     continue;
                 }
@@ -355,52 +357,60 @@ public class MultiViewer : MonoBehaviour
                 );
 
                 Quaternion newRotation = parentObject.Item2;
-                
-                // GameObject bounds = t.Find("bounds").gameObject;
-                // GameObject window = t.Find("window").gameObject;
-                
-                // Vector3 boundScale = getOriginalScale(t.gameObject);
-                // Vector3 windowScale = getWindowScale(t.gameObject);
 
-                // float miniautureScale = getMiniatureScale(child);
-                // float originalScale = getOriginalScale(child).x;
-                
-                // float scaleDist = Vector3.Distance(child.transform.Find("Height").transform.position, t.position) * (miniautureScale / originalScale);
-                // float initObjectDistance = Mathf.Abs(getOriginalDistance(t.gameObject));
+                GameObject window = t.Find("window").gameObject;
+                Vector3 windowScale = getWindowScale(t.gameObject);
 
-                // Vector3 updatedBoundScale = new Vector3 (
-                //     Mathf.Max((boundScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.x), 
-                //     Mathf.Max((boundScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.y),
-                //     boundScale.z
-                // );
+                float miniautureScale = getMiniatureScale(child);
+                float originalScale = getOriginalScale(child).x;
 
-                // Vector3 updatedWindowScale = new Vector3 (
-                //     Mathf.Max((windowScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.x), 
-                //     Mathf.Max((windowScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.y),
-                //     windowScale.z
-                // );
-
-                // if(window.tag == "Widget"){
-                //     updatedBoundScale.z = Mathf.Max((boundScale.z * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.z);
-                //     updatedWindowScale.z = Mathf.Max((windowScale.z * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.z);
-                // }
-                    
-                // bounds.transform.localScale = updatedBoundScale;
-                // window.transform.localScale = updatedWindowScale;
+                float scaleDist = Vector3.Distance(child.transform.Find("Height").transform.position, t.position) * (miniautureScale / originalScale);
+                float initObjectDistance = Mathf.Abs(getOriginalDistance(t.gameObject));
 
                 BoxCollider boxCollider;
 
                 if(isWidget(t.gameObject)){
-                    boxCollider = t.transform.Find("window").gameObject.GetComponent<BoxCollider>();
+                    boxCollider = window.GetComponent<BoxCollider>();
+
+                    Vector3 updatedWindowScale = new Vector3 (
+                        Mathf.Max((windowScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.5f, windowScale.x), 
+                        Mathf.Max((windowScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.5f, windowScale.y),
+                        Mathf.Max((windowScale.z * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.5f, windowScale.z)
+                    );
+
+                    window.transform.localScale = updatedWindowScale;
                 }
                 else{
                     boxCollider = t.transform.Find("bounds").gameObject.GetComponent<BoxCollider>();
+
+                    GameObject bounds = t.transform.Find("bounds").gameObject;
+                    Vector3 boundScale = bounds.transform.localScale;
+
+                    Vector3 updatedBoundScale = new Vector3 (
+                        Mathf.Max((boundScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.x), 
+                        Mathf.Max((boundScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, boundScale.y),
+                        boundScale.z
+                    );
+
+                    Vector3 updatedWindowScale = new Vector3 (
+                        Mathf.Max((windowScale.x * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.x), 
+                        Mathf.Max((windowScale.y * (Mathf.Abs(scaleDist) / initObjectDistance)) * 0.75f, windowScale.y),
+                        windowScale.z
+                    );
+
+                    bounds.transform.localScale = updatedBoundScale;
+                    window.transform.localScale = updatedWindowScale;
                 }
-                
-                t.rotation = newRotation;
 
                 if(!IsCollidingAtPosition(boxCollider, newPosition, newRotation, t.gameObject.name)){
-                    t.position = newPosition;
+                    if(isWidget(t.gameObject)){
+                        window.transform.position = newPosition;
+                        window.transform.rotation = newRotation;
+                    }
+                    else{
+                        t.rotation = newRotation;
+                        t.position = newPosition;
+                    }
                 }
             }
         }
@@ -577,7 +587,12 @@ public class MultiViewer : MonoBehaviour
             Vector3 windowScale;
 
             if(obj.tag == "Object"){
-                originalScale = obj.transform.Find("bounds").transform.localScale;
+                if(!isWidget(obj)){
+                  originalScale = obj.transform.Find("bounds").transform.localScale;
+                }
+                else{
+                    originalScale = obj.transform.Find("window").transform.localScale;
+                }
                 windowScale = obj.transform.Find("window").transform.localScale;
             }
             else
@@ -639,10 +654,11 @@ public class MultiViewer : MonoBehaviour
             ObjectState state = originalStates[obj.name];
 
             if(obj.tag == "Object"){
-                GameObject bounds = obj.transform.Find("bounds").gameObject;
+                if(!isWidget(obj)){
+                    GameObject bounds = obj.transform.Find("bounds").gameObject;
+                    bounds.transform.localScale = state.scale;
+                }
                 GameObject window = obj.transform.Find("window").gameObject;
-
-                bounds.transform.localScale = state.scale;
                 window.transform.localScale = state.scale;
             }
             else{
@@ -660,7 +676,7 @@ public class MultiViewer : MonoBehaviour
     }
 
     private void moveObject(bool dir){
-        if(selectedGameObject != null){
+        if(selectedGameObject != null && selectedGameObject.tag == "Object"){
             GameObject g = selectedGameObject;
         
             disableInteraction(g);
@@ -676,10 +692,7 @@ public class MultiViewer : MonoBehaviour
             }
             else{
                 GameObject window = g.transform.Find("window").gameObject;
-                GameObject bounds = g.transform.Find("bounds").gameObject;
-
                 window.transform.position = new Vector3(window.transform.position.x, window.transform.position.y, window.transform.position.z + cameraDir.z * -moveStep);
-                bounds.transform.position = new Vector3(bounds.transform.position.x, bounds.transform.position.y, bounds.transform.position.z + cameraDir.z * -moveStep);
             }
            
             enableInteraction(g);
@@ -694,6 +707,31 @@ public class MultiViewer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        parent = this.transform.Find(environments[0].ToString()).gameObject;
+        children = new List<GameObject>();
+
+
+        if(!randomizeEnvironments){
+            children = new List<GameObject>();
+
+            for(int i = 1; i < 4; i++){
+                children.Add(this.transform.Find(environments[i].ToString()).gameObject);
+            }
+        }
+        else{
+            int count = 0;
+
+            while(count < 3){
+                int index = Random.Range(1, 6);
+                GameObject child = this.transform.Find(environments[index].ToString()).gameObject;
+
+                if(!children.Contains(child)){
+                    children.Add(child);
+                    count++;
+                }
+            }
+        }
+        
 
         logger = new Logger(logString);
 
