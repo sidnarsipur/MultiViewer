@@ -84,7 +84,7 @@ public class MultiViewer : MonoBehaviour
                 }
             }
             Debug.Log("Storing original state for " + t.gameObject.name);
-            StoreOriginalState(t.gameObject.name, t.gameObject);
+            StoreOriginalState(t.gameObject.name, t.gameObject); //Storing Original State for Objects
         }
 
         if(randomizeObjects){
@@ -227,7 +227,16 @@ public class MultiViewer : MonoBehaviour
             Transform childObjects = g.transform.Find((g.name + "objects"));
 
             foreach(Transform obj in childObjects){
-                StoreOriginalState(obj.name, obj.gameObject);
+                string name;
+
+                if(g.name == "parentCopy"){
+                    name = obj.name.Replace("parentCopy", parent.name);
+                }
+                else{
+                    name = obj.name;
+                }
+
+                StoreOriginalState(name, obj.gameObject); // Storing Original State for Objects as Children
             }
         }
     }
@@ -253,8 +262,7 @@ public class MultiViewer : MonoBehaviour
 
             logger.log("Objects", "Object " + obj.name + " is  at " + obj.position + " - PLACECHILDOBJECTS");
 
-            GameObject window = obj.Find("window").gameObject;
-            
+            //Distance & Rotation Calculation
             Vector3 distance = new Vector3(
                     obj.position.x - parentAvatar.transform.position.x,
                     obj.position.y - parentRightAnchor.transform.position.y,
@@ -264,36 +272,38 @@ public class MultiViewer : MonoBehaviour
             Quaternion rotation = obj.rotation;
            
             parentObjectLocations.Add(obj.name, (distance, rotation));
-
-            float scaleDist = Vector3.Distance(parent.transform.Find("Height").transform.position, obj.position);
         
-            Vector3 windowScale = getWindowScale(obj.gameObject);
+            //Scale Calculation
+            GameObject window = obj.Find("window").gameObject;
+            Vector3 originalWindowScale = getWindowScale(obj.gameObject);
             Vector3 updatedWindowScale;
             
-            float initObjectDistance = Mathf.Abs(getOriginalDistance(obj.gameObject));
-            float ratio = Mathf.Abs(scaleDist) / initObjectDistance;
+            float currentDistance = Mathf.Abs(Vector3.Distance(parent.transform.Find("Height").transform.position, obj.position));
+            float originalDistance = Mathf.Abs(getOriginalDistance(obj.gameObject));
+
+            float ratio = Mathf.Log(currentDistance / originalDistance);
 
             if(isWidget(obj.gameObject)){
                 updatedWindowScale = new Vector3 (
-                    Mathf.Max(windowScale.x * ratio * 0.5f, windowScale.x), 
-                    Mathf.Max(windowScale.y * ratio * 0.5f, windowScale.y),
-                    Mathf.Max(windowScale.z * ratio * 0.5f, windowScale.z)
+                    Mathf.Max(originalWindowScale.x * ratio, originalWindowScale.x), 
+                    Mathf.Max(originalWindowScale.y * ratio, originalWindowScale.y),
+                    Mathf.Max(originalWindowScale.z * ratio, originalWindowScale.z)
                     );
             }
             else{
                 GameObject bounds = obj.Find("bounds").gameObject;
-                Vector3 boundScale = getOriginalScale(obj.gameObject);
+                Vector3 originalBoundScale = getOriginalScale(obj.gameObject);
 
                 Vector3 updatedBoundScale = new Vector3 (
-                    Mathf.Max(boundScale.x * ratio * 0.75f, boundScale.x), 
-                    Mathf.Max(boundScale.y * ratio * 0.75f, boundScale.y),
-                    boundScale.z
+                    Mathf.Max(originalBoundScale.x * ratio, originalBoundScale.x), 
+                    Mathf.Max(originalBoundScale.y * ratio, originalBoundScale.y),
+                    originalBoundScale.z
                     );
 
                 updatedWindowScale = new Vector3(
-                    Mathf.Max(windowScale.x * ratio * 0.75f, windowScale.x), 
-                    Mathf.Max(windowScale.y * ratio * 0.75f, windowScale.y),
-                    windowScale.z
+                    Mathf.Max(originalWindowScale.x * ratio, originalWindowScale.x), 
+                    Mathf.Max(originalWindowScale.y * ratio, originalWindowScale.y),
+                    originalWindowScale.z
                     ); 
                 
                 bounds.transform.localScale = updatedBoundScale;
@@ -338,7 +348,8 @@ public class MultiViewer : MonoBehaviour
 
                 Object obj = t.gameObject.GetComponent<Object>();
 
-                string parentObjectName = t.name.Replace(child.name, "");
+                string parentObjectName = t.name.Replace(child.name, ""); //Name of object without child prefix. Ex: BedroomMessenger -> Messenger
+                string parentName = (child.name == "parentCopy") ? parent.name : child.name; //Name of parent environment. Ex. Bedroom  
                 
                 var parentObjectLocation = parentObjectLocations[parentObjectName];
                 Vector3 distance = parentObjectLocation.Item1;
@@ -373,24 +384,20 @@ public class MultiViewer : MonoBehaviour
                 Vector3 windowScale = getWindowScale(parentObject);
                 Vector3 updatedWindowScale;
 
-                float originalDistance = Mathf.Abs(getOriginalDistance(parentObject));
-                float miniDistance = Mathf.Abs(Vector3.Distance(child.transform.Find("Height").transform.position, getOriginalPosition(t.gameObject)));
-
-                float scaleDist = Mathf.Abs(Vector3.Distance(child.transform.Find("Height").transform.position, t.position));
-
-                float ratio = scaleDist / miniDistance;
-
-                Debug.Log("Ratio for " + t.gameObject.name + " is " + ratio);
-
+                float originalDistance = Mathf.Abs(Vector3.Distance(child.transform.Find("Height").transform.position, getOriginalPosition(parentName + parentObjectName)));
+                float currentDistance = Mathf.Abs(Vector3.Distance(child.transform.Find("Height").transform.position, t.position));
+                
+                float ratio = Mathf.Log(currentDistance / originalDistance);
+                
                 BoxCollider boxCollider;
 
                 if(isWidget(t.gameObject)){
                     boxCollider = window.GetComponent<BoxCollider>();
 
                     updatedWindowScale = new Vector3 (
-                        Mathf.Max(windowScale.x * ratio * 0.5f, windowScale.x), 
-                        Mathf.Max(windowScale.y * ratio * 0.5f, windowScale.y),
-                        Mathf.Max(windowScale.z * ratio * 0.5f, windowScale.z)
+                        Mathf.Max(windowScale.x * ratio, windowScale.x), 
+                        Mathf.Max(windowScale.y * ratio, windowScale.y),
+                        Mathf.Max(windowScale.z * ratio, windowScale.z)
                     );
                 }
                 else{
@@ -400,14 +407,14 @@ public class MultiViewer : MonoBehaviour
                     Vector3 boundScale = bounds.transform.localScale;
 
                     Vector3 updatedBoundScale = new Vector3 (
-                        Mathf.Max(boundScale.x * ratio * 0.75f, boundScale.x), 
-                        Mathf.Max(boundScale.y * ratio * 0.75f, boundScale.y),
+                        Mathf.Max(boundScale.x * ratio, boundScale.x), 
+                        Mathf.Max(boundScale.y * ratio, boundScale.y),
                         boundScale.z
                     );
 
                     updatedWindowScale = new Vector3(
-                        Mathf.Max(windowScale.x * ratio * 0.75f, windowScale.x), 
-                        Mathf.Max(windowScale.y * ratio * 0.75f, windowScale.y),
+                        Mathf.Max(windowScale.x * ratio, windowScale.x), 
+                        Mathf.Max(windowScale.y * ratio, windowScale.y),
                         windowScale.z
                     );
 
@@ -622,15 +629,15 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
-    private Vector3 getOriginalPosition(GameObject obj){
-        if (originalStates.ContainsKey(obj.name))
+    private Vector3 getOriginalPosition(string name){
+        if (originalStates.ContainsKey(name))
         {
-            ObjectState state = originalStates[obj.name];
+            ObjectState state = originalStates[name];
 
             return state.position;
         }
         else{
-            Debug.Log("Object original state not found for " + obj.name);
+            Debug.Log("Object original state not found for " + name);
             return new Vector3(0, 0, 0);
         }
     }
@@ -768,10 +775,10 @@ public class MultiViewer : MonoBehaviour
 
         logger.log("MultiViewer", "Starting MultiViewer - START");
         
-        StoreOriginalState(parent.name, parent);
+        StoreOriginalState(parent.name, parent); // Storing Original State for Parent
         
         foreach(GameObject child in children){
-            StoreOriginalState(child.name, child);
+            StoreOriginalState(child.name, child); // Storing Original State for Children
         }
 
         setObjects();
