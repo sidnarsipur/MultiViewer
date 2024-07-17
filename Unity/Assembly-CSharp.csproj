@@ -73,10 +73,13 @@
     <None Include="Assets\Logs\MultiViewer_AlvinTest1.txt" />
     <None Include="Assets\Logs\Objects_.txt" />
     <None Include="Assets\Logs\MultiViewer.txt" />
+    <None Include="Assets\Logs\MultiViewer_2.txt" />
     <None Include="Assets\Logs\Controller_Test1.txt" />
+    <None Include="Assets\Logs\Objects_2.txt" />
     <None Include="Assets\Logs\Objects_Test1.txt" />
     <None Include="Assets\Logs\MultiViewer_.txt" />
     <None Include="Assets\Logs\MultiViewer_Test1.txt" />
+    <None Include="Assets\Logs\Controller_2.txt" />
     <None Include="Assets\Logs\Objects_1.txt" />
     <None Include="Assets\Logs\Controller_1.txt" />
     <None Include="Assets\Logs\Controller_AlvinTest1.txt" />
