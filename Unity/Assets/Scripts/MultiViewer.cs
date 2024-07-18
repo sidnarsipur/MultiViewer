@@ -219,7 +219,7 @@ public class MultiViewer : MonoBehaviour
             
             x = Mathf.Clamp(x, minX, maxX);
             
-            Vector3 objectPosition = new Vector3(x, heightAnchor.transform.position.y,  parentAvatarPosition.z + 0.3f);
+            Vector3 objectPosition = new Vector3(x, heightAnchor.transform.position.y,  parentAvatarPosition.z + 0.25f);
             g.transform.position = objectPosition;
 
             prevX = getRightAnchor(g).transform.position.x;
@@ -230,6 +230,27 @@ public class MultiViewer : MonoBehaviour
 
      public void placeChildObjects()
     {
+        if(!stored){
+            for (int i = 0; i < children.Count; i++){
+                Transform child = children[i].transform;
+
+                Transform childObjects = child.Find((child.name + "objects"));
+
+                string name = (child.name == "parentCopy") ? parent.name : child.name;
+
+                StoreOriginalState(name + "height", child.transform.Find("Height").gameObject);
+
+                foreach(Transform t in childObjects){
+                    Debug.Log("Storing original state for " + name);
+
+                    name = (child.name == "parentCopy") ? t.name.Replace("parentCopy", parent.name) : t.name;
+                    
+                    StoreOriginalState(name, t.gameObject); // Storing Original State for Objects as Children
+                }
+                stored = true;
+            }
+        }
+
         GameObject parentLeftAnchor = parent.transform.Find("TopLeft").gameObject;
         GameObject parentRightAnchor = parent.transform.Find("BottomRight").gameObject;
 
@@ -283,7 +304,7 @@ public class MultiViewer : MonoBehaviour
             float currentDistance = Mathf.Abs(twoAxisDistance(parent.transform.Find("Height").transform.position, obj.position));
             float originalDistance = Mathf.Abs(getOriginalDistance(obj.gameObject));
 
-            float ratio = (currentDistance / originalDistance) * 0.7f;
+            float ratio = (currentDistance / originalDistance) * 0.5f;
 
             Debug.Log("Object: " + obj.name + " Current Distance: " + currentDistance + " Original Distance: " + originalDistance + " Ratio: " + ratio + " New Calc: " + originalWindowScale.x * ratio);
 
@@ -391,13 +412,13 @@ public class MultiViewer : MonoBehaviour
                 Vector3 windowScale = getWindowScale(parentObject);
                 Vector3 updatedWindowScale;
 
-                float originalDistance = Mathf.Abs(twoAxisDistance(child.transform.Find("Height").transform.position, getOriginalPosition(parentName + parentObjectName)));
+                float originalDistance = Mathf.Abs(twoAxisDistance(getOriginalPosition(parentName + "height"), getOriginalPosition(parentName + parentObjectName)));
                 float currentDistance = Mathf.Abs(twoAxisDistance(child.transform.Find("Height").transform.position, t.position));
                 
-                float ratio = (currentDistance / originalDistance) * 0.7f;
+                float ratio = (originalDistance != 0) ? (currentDistance / originalDistance) * 0.9f : 0.9f;
                 ratio = truncate(ratio, 3);
 
-                Debug.Log("Object: " + obj.name + " Current Distance: " + currentDistance + " Original Distance: " + originalDistance + " Ratio: " + ratio + " New Calc: " + truncate((windowScale.x * ratio), 3));
+                Debug.Log("Object: " + obj.name + " Current Distance: " + currentDistance + " Original Distance: " + originalDistance + " Ratio: " + ratio + " New Calc: " + truncate((windowScale.x * ratio), 3) + " Two Axis Distance: " +  getOriginalPosition(parentName + parentObjectName));
 
                 if(isWidget(t.gameObject)){
                     boxCollider = window.GetComponent<BoxCollider>();
@@ -444,29 +465,6 @@ public class MultiViewer : MonoBehaviour
                 }
             }
         }
-
-         if(!stored){
-            for (int i = 0; i < children.Count; i++){
-                Transform child = children[i].transform;
-
-                Transform childObjects = child.Find((child.name + "objects"));
-
-                foreach(Transform t in childObjects){
-                    string name;
-
-                    if(child.name == "parentCopy"){
-                        name = t.name.Replace("parentCopy", parent.name);
-                    }
-                    else{
-                        name = t.name;
-                    }
-                Debug.Log("Storing original state for " + name);
-                StoreOriginalState(name, t.gameObject); // Storing Original State for Objects as Children
-                }
-                stored = true;
-            }
-        }
-
     }
 
     bool IsCollidingAtPosition(BoxCollider boxCollider, Vector3 position, Quaternion rotation, string name)
