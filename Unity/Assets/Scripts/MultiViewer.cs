@@ -16,6 +16,7 @@ public class MultiViewer : MonoBehaviour
 
     [Header("Options")]
     public Scenario scenario;    
+    public bool logging = false;
     public string logString = "1";
     public bool randomizeEnvironments = false;
     public bool randomizeObjects = false;
@@ -191,7 +192,7 @@ public class MultiViewer : MonoBehaviour
         float angleStep = -Mathf.PI / 8; 
         float startAngle = 2.35619f;  
 
-        float prevX = Mathf.Max(minX + 0.1f, centerX - 0.75f); 
+        float prevX = Mathf.Max(minX, centerX - 0.75f); 
 
         for (int i = 0; i < children.Count; i++)
         {
@@ -298,43 +299,43 @@ public class MultiViewer : MonoBehaviour
             parentObjectLocations.Add(obj.name, (distance, rotation));
         
             //Scale Calculation
-            Vector3 originalWindowScale = getWindowScale(obj.gameObject);
-            Vector3 updatedWindowScale;
+            // Vector3 originalWindowScale = getWindowScale(obj.gameObject);
+            // Vector3 updatedWindowScale;
             
-            float currentDistance = Mathf.Abs(twoAxisDistance(parent.transform.Find("Height").transform.position, obj.position));
-            float originalDistance = Mathf.Abs(getOriginalDistance(obj.gameObject));
+            // float currentDistance = Mathf.Abs(twoAxisDistance(parent.transform.Find("Height").transform.position, obj.position));
+            // float originalDistance = Mathf.Abs(getOriginalDistance(obj.gameObject));
 
-            float ratio = (currentDistance / originalDistance) * 0.5f;
+            // float ratio = (currentDistance / originalDistance) * 0.6f;
 
-            Debug.Log("Object: " + obj.name + " Current Distance: " + currentDistance + " Original Distance: " + originalDistance + " Ratio: " + ratio + " New Calc: " + originalWindowScale.x * ratio);
+            // Debug.Log("Object: " + obj.name + " Current Distance: " + currentDistance + " Original Distance: " + originalDistance + " Ratio: " + ratio + " New Calc: " + originalWindowScale.x * ratio);
 
-            if(isWidget(obj.gameObject)){
-                updatedWindowScale = new Vector3 (
-                    Mathf.Max(originalWindowScale.x * ratio, originalWindowScale.x), 
-                    Mathf.Max(originalWindowScale.y * ratio, originalWindowScale.y),
-                    Mathf.Max(originalWindowScale.z * ratio, originalWindowScale.z)
-                    );
-            }
-            else{
-                GameObject bounds = obj.Find("bounds").gameObject;
-                Vector3 originalBoundScale = getOriginalScale(obj.gameObject);
+            // if(isWidget(obj.gameObject)){
+            //     updatedWindowScale = new Vector3 (
+            //         Mathf.Max(originalWindowScale.x * ratio / 2, originalWindowScale.x), 
+            //         Mathf.Max(originalWindowScale.y * ratio / 2, originalWindowScale.y),
+            //         Mathf.Max(originalWindowScale.z * ratio / 2, originalWindowScale.z)
+            //         );
+            // }
+            // else{
+            //     GameObject bounds = obj.Find("bounds").gameObject;
+            //     Vector3 originalBoundScale = getOriginalScale(obj.gameObject);
 
-                Vector3 updatedBoundScale = new Vector3 (
-                    Mathf.Max(originalBoundScale.x * ratio, originalBoundScale.x), 
-                    Mathf.Max(originalBoundScale.y * ratio, originalBoundScale.y),
-                    originalBoundScale.z
-                    );
+            //     Vector3 updatedBoundScale = new Vector3 (
+            //         Mathf.Max(originalBoundScale.x * ratio, originalBoundScale.x), 
+            //         Mathf.Max(originalBoundScale.y * ratio, originalBoundScale.y),
+            //         originalBoundScale.z
+            //         );
 
-                updatedWindowScale = new Vector3(
-                    Mathf.Max(originalBoundScale.x * ratio, originalBoundScale.x), 
-                    Mathf.Max(originalBoundScale.y * ratio, originalBoundScale.y),
-                    originalBoundScale.z
-                    ); 
+            //     updatedWindowScale = new Vector3(
+            //         Mathf.Max(originalBoundScale.x * ratio, originalBoundScale.x), 
+            //         Mathf.Max(originalBoundScale.y * ratio, originalBoundScale.y),
+            //         originalBoundScale.z
+            //         ); 
                 
-                bounds.transform.localScale = updatedBoundScale;
-            }
+            //     bounds.transform.localScale = updatedBoundScale;
+            // }
                 
-            window.transform.localScale = updatedWindowScale;
+            // window.transform.localScale = updatedWindowScale;
         }
 
         foreach (GameObject child in children)
@@ -390,7 +391,7 @@ public class MultiViewer : MonoBehaviour
                 }
 
                 widthScale = childWidth / parentWidth;
-
+                
                 float xCoord = Mathf.Min(childAvatar.transform.position.x + distance.x * widthScale, maxX);
                 float yCoord = Mathf.Min(childRightAnchor.transform.position.y + distance.y * heightScale, maxY);
                 float zCoord = Mathf.Min(childAvatar.transform.position.z + distance.z * depthScale, maxZ);
@@ -407,51 +408,51 @@ public class MultiViewer : MonoBehaviour
                 BoxCollider boxCollider;
 
                 //Scale Calculation
-                GameObject parentObject = parentObjects.transform.Find(parentObjectName).gameObject;
+                // GameObject parentObject = parentObjects.transform.Find(parentObjectName).gameObject;
 
-                Vector3 windowScale = getWindowScale(parentObject);
-                Vector3 updatedWindowScale;
+                // Vector3 windowScale = getWindowScale(parentObject);
+                // Vector3 updatedWindowScale;
 
-                float originalDistance = Mathf.Abs(twoAxisDistance(getOriginalPosition(parentName + "height"), getOriginalPosition(parentName + parentObjectName)));
-                float currentDistance = Mathf.Abs(twoAxisDistance(child.transform.Find("Height").transform.position, t.position));
+                // float originalDistance = Mathf.Abs(twoAxisDistance(getOriginalPosition(parentName + "height"), getOriginalPosition(parentName + parentObjectName)));
+                // float currentDistance = Mathf.Abs(twoAxisDistance(child.transform.Find("Height").transform.position, t.position));
                 
-                float ratio = (originalDistance != 0) ? (currentDistance / originalDistance) * 0.9f : 0.9f;
-                ratio = truncate(ratio, 3);
+                // float ratio = (originalDistance != 0) ? (currentDistance / originalDistance) * 0.9f : 0.9f;
+                // ratio = truncate(ratio, 3);
 
-                Debug.Log("Object: " + obj.name + " Current Distance: " + currentDistance + " Original Distance: " + originalDistance + " Ratio: " + ratio + " New Calc: " + truncate((windowScale.x * ratio), 3) + " Two Axis Distance: " +  getOriginalPosition(parentName + parentObjectName));
+                // Debug.Log("Object: " + obj.name + " Current Distance: " + currentDistance + " Original Distance: " + originalDistance + " Ratio: " + ratio + " New Calc: " + truncate((windowScale.x * ratio), 3) + " Two Axis Distance: " +  getOriginalPosition(parentName + parentObjectName));
 
                 if(isWidget(t.gameObject)){
                     boxCollider = window.GetComponent<BoxCollider>();
 
-                    updatedWindowScale = new Vector3 (
-                        Mathf.Max(truncate((windowScale.x * ratio), 3), windowScale.x), 
-                        Mathf.Max(truncate((windowScale.y * ratio), 3), windowScale.y),
-                        Mathf.Max(truncate((windowScale.z * ratio), 3), windowScale.z)
-                    );
+                    // updatedWindowScale = new Vector3 (
+                    //     Mathf.Max(truncate((windowScale.x * ratio), 3) / 2, windowScale.x), 
+                    //     Mathf.Max(truncate((windowScale.y * ratio), 3) / 2, windowScale.y),
+                    //     Mathf.Max(truncate((windowScale.z * ratio), 3) / 2, windowScale.z)
+                    // );
                 }
                 else{
                     boxCollider = t.transform.Find("bounds").gameObject.GetComponent<BoxCollider>();
 
-                    GameObject bounds = t.transform.Find("bounds").gameObject;
-                    Vector3 boundScale = getOriginalScale(parentObject);
+                    // GameObject bounds = t.transform.Find("bounds").gameObject;
+                    // Vector3 boundScale = getOriginalScale(parentObject);
 
-                    Vector3 updatedBoundScale = new Vector3 (
-                        Mathf.Max(truncate((boundScale.x * ratio), 3), boundScale.x), 
-                        Mathf.Max(truncate((boundScale.y * ratio), 3), boundScale.y),
-                        boundScale.z
-                    );
+                    // Vector3 updatedBoundScale = new Vector3 (
+                    //     Mathf.Max(truncate((boundScale.x * ratio), 3), boundScale.x), 
+                    //     Mathf.Max(truncate((boundScale.y * ratio), 3), boundScale.y),
+                    //     boundScale.z
+                    // );
 
-                    updatedWindowScale = new Vector3(
-                        Mathf.Max(truncate((windowScale.x * ratio), 3), windowScale.x), 
-                        Mathf.Max(truncate((windowScale.y * ratio), 3), windowScale.y),
-                        windowScale.z
-                    );
+                    // updatedWindowScale = new Vector3(
+                    //     Mathf.Max(truncate((windowScale.x * ratio), 3), windowScale.x), 
+                    //     Mathf.Max(truncate((windowScale.y * ratio), 3), windowScale.y),
+                    //     windowScale.z
+                    // );
 
-                    // Debug.Log("Object: " + obj.name + " updatedBoundsScale: " + updatedBoundScale + "truncate is " + truncate((boundScale.x * ratio), 3));
-                    bounds.transform.localScale = updatedBoundScale;
+                    // // Debug.Log("Object: " + obj.name + " updatedBoundsScale: " + updatedBoundScale + "truncate is " + truncate((boundScale.x * ratio), 3));
+                    // bounds.transform.localScale = updatedBoundScale;
                 }
 
-                window.transform.localScale = updatedWindowScale;
+                // window.transform.localScale = updatedWindowScale;
 
                 if(!IsCollidingAtPosition(boxCollider, newPosition, newRotation, t.gameObject.name)){
                     if(isWidget(t.gameObject)){
@@ -770,7 +771,7 @@ public class MultiViewer : MonoBehaviour
             }
             else{
                 GameObject window = g.transform.Find("window").gameObject;
-                window.transform.position = new Vector3(window.transform.position.x, window.transform.position.y, window.transform.position.z + cameraDir.z * -moveStep);
+                window.transform.position = Vector3.MoveTowards(window.transform.position, camera.transform.position, -moveStep);
             }
            
             enableInteraction(g);
@@ -785,12 +786,8 @@ public class MultiViewer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Camera.main.transform.position = parentAvatarPosition;
-        Camera.main.transform.rotation = Quaternion.identity;
-
         parent = this.transform.Find(environments[0].ToString()).gameObject;
         children = new List<GameObject>();
-
 
         if(!randomizeEnvironments){
             children = new List<GameObject>();
@@ -814,7 +811,7 @@ public class MultiViewer : MonoBehaviour
         }
         
 
-        logger = new Logger(logString);
+        logger = new Logger(logString, logger);
 
         logger.createLog("Objects");
         logger.createLog("MultiViewer");

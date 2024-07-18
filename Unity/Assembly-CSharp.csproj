@@ -65,17 +65,23 @@
     <Compile Include="Assets\Scripts\Environment.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Logs\Controller_Sunniva_1.txt" />
     <None Include="Assets\Logs\Objects_AlvinTest1.txt" />
     <None Include="Assets\Logs\Controller.txt" />
     <None Include="Assets\Logs\Objects.txt" />
+    <None Include="Assets\Logs\MultiViewer_Test.txt" />
     <None Include="Assets\Logs\Objects_Tony.txt" />
     <None Include="Assets\Logs\MultiViewer_AlvinTest1.txt" />
     <None Include="Assets\Logs\Controller_Tony.txt" />
+    <None Include="Assets\Logs\Objects_Sunniva_1.txt" />
     <None Include="Assets\Logs\MultiViewer_Tony.txt" />
+    <None Include="Assets\Logs\MultiViewer_Sunniva_1.txt" />
     <None Include="Assets\Logs\MultiViewer.txt" />
     <None Include="Assets\Logs\MultiViewer_2.txt" />
+    <None Include="Assets\Logs\Objects_Test.txt" />
     <None Include="Assets\Logs\Objects_2.txt" />
     <None Include="Assets\Logs\Controller_2.txt" />
+    <None Include="Assets\Logs\Controller_Test.txt" />
     <None Include="Assets\Logs\Controller_AlvinTest1.txt" />
   </ItemGroup>
   <ItemGroup>
