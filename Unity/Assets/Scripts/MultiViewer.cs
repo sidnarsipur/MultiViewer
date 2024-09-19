@@ -55,7 +55,7 @@ public class MultiViewer : MonoBehaviour
     //Clears the environment by disabling all objects and enabling interactions
     public void clearEnv()
     {
-        logger.log("MultiViewer", "Clearing Environment - CLEARENV");
+        logger.log("MultiViewer", "CLEARING ENVIRONMENT - CLEARENV");
 
         foreach(GameObject g in children)
         {
@@ -79,11 +79,17 @@ public class MultiViewer : MonoBehaviour
                     t.gameObject.SetActive(false);
                     continue;
                 }
+                else{
+                    logger.log("MultiViewer", "SETTING OBJECT - " + parent.name + " - SETENV");
+                }
             }
             else{
                 if(!prodObjects.Contains(t.gameObject.name)){
                     t.gameObject.SetActive(false);
                     continue;
+                }
+                else{
+                    logger.log("MultiViewer", "SETTING OBJECT - " + parent.name + " - SETENV");
                 }
             }
             Debug.Log("Storing original state for " + t.gameObject.name);
@@ -109,15 +115,16 @@ public class MultiViewer : MonoBehaviour
     {
         clearEnv(); 
 
-        logger.log("MultiViewer", "Initializing Environment - SETENV");
-        logger.log("MultiViewer", "Setting Parent To " + parent.name + " - SETENV");
+        logger.log("MultiViewer", "INIT ENVIRONMENT - SETENV");
+        logger.log("MultiViewer", "SETTING SCENARIO - " + scenario + " - SETENV");
+        logger.log("MultiViewer", "SETTING PARENT - " + parent.name + " - SETENV");
 
         Environment e = parent.GetComponent<Environment>();
         e.id = 0;
 
         for(int i = 0; i < children.Count; i++)
         {
-            logger.log("MultiViewer", "Adding Child " + children[i].name + " - SETENV");
+            logger.log("MultiViewer", "SETTING CHILD - " + children[i].name + " - SETENV");
 
             Environment childEnv = children[i].GetComponent<Environment>();
             childEnv.id = i + 1;
@@ -153,7 +160,7 @@ public class MultiViewer : MonoBehaviour
         Camera.main.transform.rotation = Quaternion.identity;
 
         Debug.Log("Set Env Finished");
-        logger.log("MultiViewer", "Environment Setup Complete - SETENV");
+        logger.log("MultiViewer", "ENV SETUP_COMPLETE - SETENV");
     }
 
     public void createChildObjects()
@@ -225,7 +232,7 @@ public class MultiViewer : MonoBehaviour
 
             prevX = getRightAnchor(g).transform.position.x;
 
-            logger.log("MultiViewer", "Child " + g.name + " Placed at " + objectPosition + " - PLACECHILDREN");
+            logger.log("MultiViewer", "CHILD PLACED - " + g.name + " - " + objectPosition + " - PLACECHILDREN");
         }
     }
 
@@ -269,7 +276,7 @@ public class MultiViewer : MonoBehaviour
                 continue;
             }            
 
-            logger.log("Objects", "Object " + obj.name + " is  at " + obj.position + " - PLACECHILDOBJECTS");
+            logger.log("Objects",  "OBJECT POSITION - " + obj.name + " - " + obj.position + " - " obj.rotation + " - " + obj.scale + " - PLACECHILDOBJECTS");
 
             //Distance & Rotation Calculation
             Vector3 distance;
@@ -497,7 +504,7 @@ public class MultiViewer : MonoBehaviour
         }
 
         Debug.Log("Changing parent to " + newParent.name);
-        logger.log("MultiViewer", "Changing Parent To - " + newParent.name + " - CHANGEPARENT");
+        logger.log("MultiViewer", "CHANGING PARENT - " + newParent.name + " - CHANGEPARENT");
 
         //Reset Interactions
         disableInteraction(newParent);
@@ -564,7 +571,7 @@ public class MultiViewer : MonoBehaviour
 
         selectedGameObject = null;
 
-        logger.log("MultiViewer", "Parent Set To - " + newParent.name + " - CHANGEPARENT");
+        logger.log("MultiViewer", "PARENT SET - " + newParent.name + " - CHANGEPARENT");
     }
 
     private float getMiniatureScale(GameObject g){
@@ -609,7 +616,7 @@ public class MultiViewer : MonoBehaviour
     public void setSelectedGameObject(GameObject g){ 
         if (g != null){
             Debug.Log("Selecting: " + g.name);
-            logger.log("Objects", "Selected Object " + g.name + " - SETSELECTEDOBJECT");
+            logger.log("Objects", "SELECTED OBJECT - " + g.name + " - SETSELECTEDOBJECT");
 
             selectedGameObject = g;
         }
@@ -747,7 +754,7 @@ public class MultiViewer : MonoBehaviour
             obj.transform.position = state.position;
             obj.transform.rotation = state.rotation;
 
-            logger.log("Objects", obj.name + " position moved to " + obj.transform.position + " - RESETOBJECTSTATE");
+            logger.log("Objects",  "OBJECT POSITION - " + obj.name + " - " + obj.position + " - " obj.rotation + " - " + obj.scale + " - RESETOBJECTSTATE");
         }
         else{
             Debug.Log("Object original state not found for " + obj.name);
@@ -776,7 +783,7 @@ public class MultiViewer : MonoBehaviour
            
             enableInteraction(g);
 
-            logger.log("Objects", g.name + " position moved to " + g.transform.position + " - MOVEOBJECT");
+            logger.log("Objects",  "OBJECT POSITION - " + obj.name + " - " + obj.position + " - " obj.rotation + " - " + obj.scale + " - MOVEOBJECT");
         }
         else{
             Debug.Log("No object selected");
@@ -817,7 +824,7 @@ public class MultiViewer : MonoBehaviour
         logger.createLog("MultiViewer");
         logger.createLog("Controller");
 
-        logger.log("MultiViewer", "Starting MultiViewer - START");
+        logger.log("MultiViewer", "START MULTIVIEWER - START");
         
         StoreOriginalState(parent.name, parent); // Storing Original State for Parent
         
@@ -844,7 +851,7 @@ public class MultiViewer : MonoBehaviour
 
         if(OVRInput.Get(OVRInput.RawButton.B)){
             logger.log("Controller", "B Button");
-            logger.log("MultiViewer", "Resetting Objects - RESETENV");
+            logger.log("MultiViewer", "RESETTING OBJECTS - RESETENV");
             foreach(Transform t in parentObjects.transform){
                 ResetObjectState(t.gameObject);
             }
@@ -874,6 +881,6 @@ public class MultiViewer : MonoBehaviour
 
     void OnApplicationQuit()
     {
-        logger.log("MultiViewer", "Quitting MultiViewer - APPLICATIONQUIT");
+        logger.log("MultiViewer", "QUITTING MULTIVIEWER - APPLICATIONQUIT");
     }
 }
