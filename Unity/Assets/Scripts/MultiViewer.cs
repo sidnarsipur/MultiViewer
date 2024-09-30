@@ -276,7 +276,7 @@ public class MultiViewer : MonoBehaviour
                 continue;
             }            
 
-            logger.log("Objects",  "OBJECT POSITION - " + obj.name + " - " + obj.position + " - " obj.rotation + " - " + obj.scale + " - PLACECHILDOBJECTS");
+            logger.log("Objects", "OBJECT POSITION - " + obj.name + " - " + obj.position + " - " + obj.rotation + " - " + obj.transform.localScale + " - PLACECHILDOBJECTS");
 
             //Distance & Rotation Calculation
             Vector3 distance;
@@ -754,7 +754,7 @@ public class MultiViewer : MonoBehaviour
             obj.transform.position = state.position;
             obj.transform.rotation = state.rotation;
 
-            logger.log("Objects",  "OBJECT POSITION - " + obj.name + " - " + obj.position + " - " obj.rotation + " - " + obj.scale + " - RESETOBJECTSTATE");
+            logger.log("Objects", "OBJECT POSITION - " + obj.name + " - " + obj.transform.position + " - " + obj.transform.rotation + " - " + obj.transform.localScale + " - RESETOBJECTSTATE");
         }
         else{
             Debug.Log("Object original state not found for " + obj.name);
@@ -783,7 +783,7 @@ public class MultiViewer : MonoBehaviour
            
             enableInteraction(g);
 
-            logger.log("Objects",  "OBJECT POSITION - " + obj.name + " - " + obj.position + " - " obj.rotation + " - " + obj.scale + " - MOVEOBJECT");
+            logger.log("Objects", "OBJECT POSITION - " + g.name + " - " + g.transform.position + " - " + g.transform.rotation + " - " + g.transform.localScale + " - MOVEOBJECT");
         }
         else{
             Debug.Log("No object selected");
