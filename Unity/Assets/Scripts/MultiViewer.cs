@@ -1,4 +1,5 @@
 using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -81,7 +82,7 @@ public class MultiViewer : MonoBehaviour
                     continue;
                 }
                 else{
-                    logger.log("MultiViewer", "SETTING OBJECT - " + parent.name + " - SETENV");
+                    logger.log("MultiViewer", "SETTING OBJECT - " + gameObject.name + " - SETENV");
                 }
             }
             else{
@@ -90,7 +91,7 @@ public class MultiViewer : MonoBehaviour
                     continue;
                 }
                 else{
-                    logger.log("MultiViewer", "SETTING OBJECT - " + parent.name + " - SETENV");
+                    logger.log("MultiViewer", "SETTING OBJECT - " + gameObject.name + " - SETENV");
                 }
             }
             Debug.Log("Storing original state for " + t.gameObject.name);
@@ -101,7 +102,7 @@ public class MultiViewer : MonoBehaviour
             int numObjects = 2;
 
             while(numObjects > 0){
-                int index = Random.Range(0, 13);
+                int index = UnityEngine.Random.Range(0, 13);
                 Transform t = parentObjects.transform.GetChild(index);
 
                 if(t.gameObject.activeSelf == true){
@@ -284,7 +285,9 @@ public class MultiViewer : MonoBehaviour
                 continue;
             }            
 
-            logger.log("Objects", "OBJECT POSITION - " + obj.name + " - " + obj.position + " - " + obj.rotation + " - " + obj.transform.localScale + " - PLACECHILDOBJECTS");
+            if(DateTime.Now.Second == 0){
+                logger.log("Objects", "OBJECT POSITION - " + obj.name + " - " + obj.position + " - " + obj.rotation + " - " + obj.transform.localScale + " - PLACECHILDOBJECTS");
+            }
 
             //Distance & Rotation Calculation
             Vector3 distance;
@@ -820,7 +823,7 @@ public class MultiViewer : MonoBehaviour
             int count = 0;
 
             while(count < 3){
-                int index = Random.Range(1, 6);
+                int index = UnityEngine.Random.Range(1, 6);
                 GameObject child = this.transform.Find(environments[index].ToString()).gameObject;
 
                 if(!children.Contains(child)){
@@ -831,7 +834,7 @@ public class MultiViewer : MonoBehaviour
         }
         
 
-        logger = new Logger(logString, logger);
+        logger = new Logger(logString, logging);
 
         logger.createLog("Objects");
         logger.createLog("MultiViewer");

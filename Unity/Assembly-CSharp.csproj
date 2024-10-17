@@ -65,6 +65,11 @@
     <Compile Include="Assets\Scripts\Environment.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Logs\Objects_Sid_1.txt" />
+    <None Include="Assets\Logs\Controller_Sid_1.txt" />
+    <None Include="Assets\Logs\MultiViewer_Sid_1.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2022.3.32f1\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
       <Private>False</Private>
