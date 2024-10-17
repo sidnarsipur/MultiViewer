@@ -52,7 +52,7 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
-    //Clears the environment by disabling all objects and enabling interactions
+    //Clears the environment by disabling all objects and enabling interactions.
     public void clearEnv()
     {
         logger.log("MultiViewer", "CLEARING ENVIRONMENT - CLEARENV");
@@ -69,6 +69,7 @@ public class MultiViewer : MonoBehaviour
         Debug.Log("Clear Env Finished");
     }
 
+    //Enables/Disables objects (widgets) based on (1) task selected (2) randomizeObjects option. 
     public void setObjects()
     {
         parentObjects = this.transform.Find("objects").gameObject; 
@@ -111,6 +112,7 @@ public class MultiViewer : MonoBehaviour
         } 
     }
 
+    //Sets the environment when MultiViewer is called initially.
     public void setEnv()
     {
         clearEnv(); 
@@ -163,6 +165,8 @@ public class MultiViewer : MonoBehaviour
         logger.log("MultiViewer", "ENV SETUP_COMPLETE - SETENV");
     }
 
+    /*Creates copies of the widgets for each miniature environment.
+    Name is set to child.name + object.name. For example, the Clock widget in the Bedroom will become BedroomClock.*/
     public void createChildObjects()
     {
         foreach(GameObject child in children)
@@ -177,6 +181,7 @@ public class MultiViewer : MonoBehaviour
         }
     }
     
+    //Places the miniature environments in the parent environment.
     public void placeChildren()
     {
         children.Sort((x, y) => string.Compare(getID(x).ToString(), getID(y).ToString()));
@@ -236,7 +241,10 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
-     public void placeChildObjects()
+    /*
+    This function handles the position of the objects (widgets) in the miniature environment when the respective object is moved in the parent environment.
+    */
+    public void placeChildObjects()
     {
         if(!stored){
             for (int i = 0; i < children.Count; i++){
@@ -475,6 +483,7 @@ public class MultiViewer : MonoBehaviour
         }
     }
 
+    //Checks if an object at position p is colliding with any other object
     bool IsCollidingAtPosition(BoxCollider boxCollider, Vector3 position, Quaternion rotation, string name)
     {
         Vector3 boxSize = Vector3.Scale(boxCollider.size, boxCollider.transform.lossyScale) / 2;
@@ -491,6 +500,9 @@ public class MultiViewer : MonoBehaviour
     }
 
 
+    /*
+    This function is called when the parent is changed by the user in MultiViewer
+    */
     public void changeParent(GameObject newParent)
     {   
         if(string.Equals(newParent.name, "parentCopy")){
@@ -591,6 +603,7 @@ public class MultiViewer : MonoBehaviour
     }
 
 
+    //Get width of a miniature environment
     private float getWidth(GameObject g){
         GameObject leftAnchor = g.transform.Find("TopLeft").gameObject;
         GameObject rightAnchor = g.transform.Find("BottomRight").gameObject;
